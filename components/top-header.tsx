@@ -1,10 +1,10 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Search, LogOut } from "lucide-react";
 
 export default function TopHeader() {
   const { user, logout } = useAuth();
@@ -25,9 +25,7 @@ export default function TopHeader() {
       {/* Left - Search */}
       <div className="flex-1 max-w-md">
         <div className="relative">
-          <span className="absolute left-3 top-3 text-muted-foreground">
-            🔍
-          </span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="Search..."
             className="pl-10 bg-muted border-border"
@@ -63,7 +61,7 @@ export default function TopHeader() {
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-muted transition-colors"
               >
-                <span className="text-lg">🚪</span>
+                <LogOut className="w-4 h-4" />
                 Logout
               </button>
             </div>

@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
-  const [email, setEmail] = useState("khine@example.com");
+  const [email, setEmail] = useState("u6611718@au.edu");
   const [displayName, setDisplayName] = useState("Khine Khant");
   const [saved, setSaved] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -17,11 +17,6 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
 
   if (!mounted) {
     return null;
@@ -59,14 +54,9 @@ export default function SettingsPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="mt-2"
+                  disabled
                 />
               </div>
-              <Button
-                onClick={handleSave}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                {saved ? "Saved!" : "Save Changes"}
-              </Button>
             </div>
           </Card>
 
@@ -96,12 +86,6 @@ export default function SettingsPage() {
                   ))}
                 </div>
               </div>
-              <label className="flex items-center gap-3 p-3 border rounded-lg border-border cursor-pointer">
-                <input type="checkbox" defaultChecked className="w-4 h-4" />
-                <span className="text-sm text-foreground">
-                  Email me about new features
-                </span>
-              </label>
             </div>
           </Card>
         </div>

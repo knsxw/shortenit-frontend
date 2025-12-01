@@ -24,7 +24,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("bitly-links", JSON.stringify(links));
+    localStorage.setItem("shortenit-links", JSON.stringify(links));
   }, [links]);
 
   const generateShortCode = () => {
@@ -147,7 +147,7 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
                       <div className="flex-1 min-w-0 w-full">
                         <p className="font-mono text-sm font-semibold text-primary truncate">
-                          bit.ly/{link.shortCode}
+                          shortenit.ksx.app/{link.shortCode}
                         </p>
                         <p className="text-sm text-muted-foreground truncate">
                           {link.longUrl}
@@ -158,7 +158,7 @@ export default function Home() {
                         size="sm"
                         onClick={() =>
                           navigator.clipboard.writeText(
-                            `bit.ly/${link.shortCode}`
+                            `shortenit.ksx.app/${link.shortCode}`
                           )
                         }
                         className="shrink-0 whitespace-nowrap w-full sm:w-auto"

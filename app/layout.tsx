@@ -7,9 +7,6 @@ import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import MobileMenu from "@/components/mobile-menu";
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
   title: "Shortenit - URL Shortener & Link Management",
   description: "Shorten your URLs, create QR codes, and track link analytics",

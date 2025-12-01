@@ -20,7 +20,7 @@ export default function LoginPage() {
       const mockUser = {
         id: "user-" + Date.now(),
         name: "Khine Khant",
-        email: "khine@example.com",
+        email: "u6611718@au.edu.com",
         avatar: "K",
         loginTime: new Date().toISOString(),
       };
@@ -47,8 +47,8 @@ export default function LoginPage() {
         <div className="p-8">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              b
+            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+              S
             </div>
           </div>
 

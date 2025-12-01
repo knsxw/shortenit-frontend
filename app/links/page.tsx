@@ -17,20 +17,20 @@ export default function LinksPage() {
   >([]);
 
   useEffect(() => {
-    const savedLinks = localStorage.getItem("bitly-links");
+    const savedLinks = localStorage.getItem("shortenit-links");
     if (savedLinks) {
       setLinks(JSON.parse(savedLinks));
     }
   }, []);
 
   const handleCopy = (shortCode: string) => {
-    navigator.clipboard.writeText(`bit.ly/${shortCode}`);
+    navigator.clipboard.writeText(`shortenit.ksx.app/${shortCode}`);
   };
 
   const handleDelete = (id: string) => {
     const updatedLinks = links.filter((link) => link.id !== id);
     setLinks(updatedLinks);
-    localStorage.setItem("bitly-links", JSON.stringify(updatedLinks));
+    localStorage.setItem("shortenit-links", JSON.stringify(updatedLinks));
   };
 
   return (
@@ -56,7 +56,7 @@ export default function LinksPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="flex-1 min-w-0 w-full">
                       <p className="font-mono text-sm font-semibold text-primary truncate">
-                        bit.ly/{link.shortCode}
+                        shortenit.ksx.app/{link.shortCode}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {link.longUrl}
