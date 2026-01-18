@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, LogOut } from "lucide-react";

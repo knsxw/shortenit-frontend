@@ -63,6 +63,7 @@ function QRCodesContent() {
   const [selectedUrl, setSelectedUrl] = useState<Url>(MOCK_URLS[0]);
   const [fgColor, setFgColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#FFFFFF");
+  const [marginSize, setMarginSize] = useState(4);
   const [size, setSize] = useState(256);
   const [includeMargin, setIncludeMargin] = useState(true);
   const [errorLevel, setErrorLevel] = useState<"L" | "M" | "Q" | "H">("M");
@@ -214,6 +215,7 @@ function QRCodesContent() {
                     bgColor={bgColor}
                     fgColor={fgColor}
                     level={errorLevel}
+                    marginSize={marginSize}
                   />
                   {logoUrl && (
                     <img

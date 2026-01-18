@@ -207,7 +207,7 @@ export default function Home() {
                         size="sm"
                         onClick={() =>
                           navigator.clipboard.writeText(
-                            `${window.location.origin}/${link.shortCode}`
+                            link.shortUrl || `${window.location.origin}/${link.shortCode}`
                           )
                         }
                         className="shrink-0 whitespace-nowrap w-full sm:w-auto"

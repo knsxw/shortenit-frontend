@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/components/auth-provider";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const { login } = useAuth();
 
   const handleMicrosoftLogin = async () => {
     setIsLoading(true);
@@ -24,11 +24,9 @@ export default function LoginPage() {
         avatar: "K",
         loginTime: new Date().toISOString(),
       };
+      const mockToken = "mock-token-" + Date.now();
 
-      localStorage.setItem("auth-user", JSON.stringify(mockUser));
-      localStorage.setItem("auth-token", "mock-token-" + Date.now());
-
-      window.location.href = "/";
+      login(mockUser, mockToken);
     } catch (error) {
       console.error("Login failed:", error);
       setIsLoading(false);
@@ -36,9 +34,9 @@ export default function LoginPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("auth-user");
-    localStorage.removeItem("auth-token");
-    router.push("/auth");
+    // This function was unused in the original code or used for testing. 
+    // Since this is the login page, handleLogout is not typically needed here unless manual cleanup.
+    // The previous implementation had it. I'll remove it as it's not used in the UI.
   };
 
   return (
