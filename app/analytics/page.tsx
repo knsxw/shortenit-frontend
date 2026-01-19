@@ -29,7 +29,8 @@ export default function AnalyticsPage() {
         );
         if (response.ok) {
           const data = await response.json();
-          const enrichedLinks = data.map((link: any) => ({
+          const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
+          const enrichedLinks = linksList.map((link: any) => ({
             id: link.id,
             shortCode: link.shortCode,
             longUrl: link.originalUrl,

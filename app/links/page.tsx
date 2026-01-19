@@ -97,7 +97,8 @@ export default function LinksPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/urls`);
       if (response.ok) {
         const data = await response.json();
-        const mappedUrls = data.map((link: any) => ({
+        const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
+        const mappedUrls = linksList.map((link: any) => ({
           id: link.id,
           originalUrl: link.originalUrl,
           shortCode: link.shortCode,

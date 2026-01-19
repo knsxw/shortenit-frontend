@@ -78,7 +78,8 @@ function QRCodesContent() {
         );
         if (response.ok) {
           const data = await response.json();
-          const fetchedUrls = data.map((link: any) => ({
+          const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
+          const fetchedUrls = linksList.map((link: any) => ({
             shortCode: link.shortCode,
             shortUrl:
               link.shortUrl ||
@@ -199,9 +200,9 @@ function QRCodesContent() {
             </p>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Preview Section */}
-            <div className="space-y-6">
+            <div className="space-y-6 lg:sticky lg:top-6">
               <div className="bg-card p-8 rounded-lg border border-border">
                 <h3 className="font-semibold mb-4">Live Preview</h3>
                 <div

@@ -7,6 +7,7 @@ import TopHeader from "@/components/top-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Check, Copy } from "lucide-react";
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState("");
@@ -21,6 +22,7 @@ export default function Home() {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLinks();
@@ -29,13 +31,15 @@ export default function Home() {
   const fetchLinks = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/urls?page=0&size=5`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/urls/recent?page=0&size=5`
       );
       if (response.ok) {
         console.log(response);
         const data = await response.json();
+        const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
+        
         setLinks(
-          data
+          linksList
             .map((link: any) => ({
               id: link.id,
               longUrl: link.originalUrl,
@@ -106,6 +110,12 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
@@ -184,9 +194,9 @@ export default function Home() {
                 Your recent links
               </h2>
               <div className="space-y-2">
-                {links.map((link) => (
+                {links.map((link, index) => (
                   <Card
-                    key={link.id}
+                    key={link.id || link.shortCode || index}
                     className="p-3 md:p-4 border border-border bg-card"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
@@ -206,13 +216,24 @@ export default function Home() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          navigator.clipboard.writeText(
-                            link.shortUrl || `${window.location.origin}/${link.shortCode}`
+                          handleCopy(
+                            link.shortUrl || `${window.location.origin}/${link.shortCode}`,
+                            link.id || link.shortCode
                           )
                         }
-                        className="shrink-0 whitespace-nowrap w-full sm:w-auto"
+                        className="shrink-0 whitespace-nowrap w-full sm:w-auto gap-2"
                       >
-                        Copy
+                        {copiedId === (link.id || link.shortCode) ? (
+                          <>
+                            <Check className="w-4 h-4 text-green-500" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy
+                          </>
+                        )}
                       </Button>
                     </div>
                   </Card>
