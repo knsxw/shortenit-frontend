@@ -102,7 +102,7 @@ export default function LinksPage() {
           id: link.id,
           originalUrl: link.originalUrl,
           shortCode: link.shortCode,
-          shortUrl: link.shortUrl || `${window.location.origin}/${link.shortCode}`,
+          shortUrl: link.shortUrl || `${window.location.origin}/s/${link.shortCode}`,
           clickCount: link.clickCount || 0,
           createdAt: link.createdAt,
           customAlias: link.customAlias,
