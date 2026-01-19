@@ -74,7 +74,7 @@ function QRCodesContent() {
     const fetchLinks = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/urls`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`
         );
         if (response.ok) {
           const data = await response.json();
@@ -83,7 +83,7 @@ function QRCodesContent() {
             shortCode: link.shortCode,
             shortUrl:
               link.shortUrl ||
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/s/${link.shortCode}`,
+              `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/s/${link.shortCode}`,
             originalUrl: link.originalUrl,
           })).reverse();
           

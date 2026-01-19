@@ -31,7 +31,7 @@ export default function Home() {
   const fetchLinks = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/urls/recent?page=0&size=5`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/recent?page=0&size=5`
       );
       if (response.ok) {
         console.log(response);
@@ -78,7 +78,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shorten`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/shorten`,
         {
           method: "POST",
           headers: {
