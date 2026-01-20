@@ -9,6 +9,9 @@ import {
   Square,
   Image as ImageIcon,
   Sparkles,
+  ChevronDown,
+  Search,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +62,13 @@ function QRCodesContent() {
   const searchParams = useSearchParams();
   const initialCode = searchParams.get("code");
   const [urls, setUrls] = useState<Url[]>(MOCK_URLS);
-  const [page, setPage] = useState(0);
+  // Removed page state as we list all with search now
   const [selectedUrl, setSelectedUrl] = useState<Url>(MOCK_URLS[0]);
+  
+  // Combobox State
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [linkSearch, setLinkSearch] = useState("");
+
   const [fgColor, setFgColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#FFFFFF");
   const [marginSize, setMarginSize] = useState(4);
@@ -74,7 +82,7 @@ function QRCodesContent() {
     const fetchLinks = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`
         );
         if (response.ok) {
           const data = await response.json();
@@ -96,7 +104,7 @@ function QRCodesContent() {
                 setSelectedUrl(preselected);
                 const index = fetchedUrls.indexOf(preselected);
                 if (index !== -1) {
-                  setPage(Math.floor(index / PAGE_SIZE));
+                  // setPage(Math.floor(index / PAGE_SIZE)); // Pagination removed
                 }
               } else {
                  setSelectedUrl(fetchedUrls[0]);
@@ -254,61 +262,76 @@ function QRCodesContent() {
             {/* Customization Section */}
             <div className="space-y-6">
               {/* Select Link */}
-              <div className="bg-card p-6 rounded-lg border border-border">
+              <div className="bg-card p-6 rounded-lg border border-border relative z-20">
                 <h3 className="font-semibold mb-4">Select Link</h3>
-                <div className="space-y-4">
-                  <select
-                    value={selectedUrl.shortCode}
-                    onChange={(e) =>
-                      setSelectedUrl(
-                        urls.find((u) => u.shortCode === e.target.value) ||
-                          urls[0]
-                      )
-                    }
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground"
+                
+                {/* Custom Combobox */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full flex items-center justify-between bg-background border border-border rounded-lg px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    {urls
-                      .slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-                      .map((url) => (
-                        <option key={url.shortCode} value={url.shortCode}>
-                          {url.shortCode} - {url.originalUrl.substring(0, 40)}
-                        </option>
-                      ))}
-                  </select>
-                  
-                  {urls.length > PAGE_SIZE && (
-                    <div className="flex items-center justify-between text-sm">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(0, p - 1))}
-                        disabled={page === 0}
-                      >
-                        Previous
-                      </Button>
-                      <span className="text-muted-foreground">
-                        Page {page + 1} of {Math.ceil(urls.length / PAGE_SIZE)}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) =>
-                            Math.min(
-                              Math.ceil(urls.length / PAGE_SIZE) - 1,
-                              p + 1
-                            )
+                    <span className="truncate">
+                      {selectedUrl ? `${selectedUrl.shortCode} - ${selectedUrl.originalUrl}` : "Select a link..."}
+                    </span>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-lg border border-border shadow-xl overflow-hidden z-50">
+                      <div className="p-2 border-b border-border">
+                        <div className="relative">
+                           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                           <Input
+                             placeholder="Search links..."
+                             value={linkSearch}
+                             onChange={(e) => setLinkSearch(e.target.value)}
+                             className="pl-9 h-9 border-none bg-muted/50 focus-visible:ring-0"
+                             autoFocus
+                           />
+                        </div>
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto p-1">
+                        {urls
+                          .filter(u => 
+                             u.shortCode.toLowerCase().includes(linkSearch.toLowerCase()) || 
+                             u.originalUrl.toLowerCase().includes(linkSearch.toLowerCase())
                           )
-                        }
-                        disabled={
-                          page >= Math.ceil(urls.length / PAGE_SIZE) - 1
-                        }
-                      >
-                        Next
-                      </Button>
+                          .map((url) => (
+                          <button
+                            key={url.shortCode}
+                            onClick={() => {
+                              setSelectedUrl(url);
+                              setIsDropdownOpen(false);
+                              setLinkSearch("");
+                            }}
+                            className={`w-full text-left px-3 py-2.5 text-sm rounded-md flex items-center justify-between hover:bg-accent hover:text-accent-foreground ${
+                              selectedUrl.shortCode === url.shortCode ? "bg-accent/50 text-accent-foreground" : ""
+                            }`}
+                          >
+                            <div className="flex flex-col truncate pr-2">
+                               <span className="font-medium">{url.shortCode}</span>
+                               <span className="text-muted-foreground text-xs truncate">{url.originalUrl}</span>
+                            </div>
+                            {selectedUrl.shortCode === url.shortCode && (
+                               <Check className="w-4 h-4 text-primary" />
+                            )}
+                          </button>
+                        ))}
+                        {urls.filter(u => u.shortCode.toLowerCase().includes(linkSearch.toLowerCase()) || u.originalUrl.toLowerCase().includes(linkSearch.toLowerCase())).length === 0 && (
+                           <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                             No links found.
+                           </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
+                {/* Overlay to close dropdown if clicked outside */}
+                {isDropdownOpen && (
+                   <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+                )}
               </div>
 
               {/* Color Presets */}

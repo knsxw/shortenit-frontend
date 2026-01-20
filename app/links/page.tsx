@@ -94,7 +94,7 @@ export default function LinksPage() {
   const fetchUrls = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/all`);
       if (response.ok) {
         const data = await response.json();
         const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
