@@ -1,7 +1,6 @@
 "use client";
 
 import TopHeader from "@/components/top-header";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
@@ -10,12 +9,12 @@ import { useState, useEffect } from "react";
 export default function SettingsPage() {
   const [email, setEmail] = useState("u6611718@au.edu");
   const [displayName, setDisplayName] = useState("Khine Khant");
-  const [saved, setSaved] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {

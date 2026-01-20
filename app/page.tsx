@@ -1,25 +1,33 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useEffect } from "react";
 import TopHeader from "@/components/top-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Link2, Sparkles, BarChart3, QrCode, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+interface LinkItem {
+  id: string;
+  longUrl: string;
+  shortCode: string;
+  shortUrl?: string;
+  createdAt: string;
+}
+
+interface RawApiResponse {
+  id: string;
+  originalUrl: string;
+  shortCode: string;
+  shortUrl?: string;
+  createdAt: string;
+}
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState("");
-  const [links, setLinks] = useState<
-    Array<{
-      id: string;
-      longUrl: string;
-      shortCode: string;
-      shortUrl?: string;
-      createdAt: string;
-    }>
-  >([]);
+  const [links, setLinks] = useState<LinkItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -34,13 +42,12 @@ export default function Home() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/recent?page=0&size=5`
       );
       if (response.ok) {
-        console.log(response);
         const data = await response.json();
         const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
         
         setLinks(
           linksList
-            .map((link: any) => ({
+            .map((link: RawApiResponse) => ({
               id: link.id,
               longUrl: link.originalUrl,
               shortCode: link.shortCode,
@@ -54,10 +61,6 @@ export default function Home() {
     } catch (error) {
       console.error("Failed to fetch links:", error);
     }
-  };
-
-  const generateShortCode = () => {
-    return Math.random().toString(36).substring(2, 8);
   };
 
   const handleShorten = async (e: React.FormEvent) => {
@@ -76,6 +79,7 @@ export default function Home() {
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/shorten`,
@@ -95,7 +99,7 @@ export default function Home() {
       }
 
       const data = await response.json();
-      const newLink = {
+      const newLink: LinkItem = {
         id: data.id,
         longUrl: data.originalUrl,
         shortCode: data.shortCode,
@@ -105,8 +109,9 @@ export default function Home() {
 
       setLinks([newLink, ...links]);
       setLongUrl("");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -119,130 +124,164 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-background flex flex-col font-sans selection:bg-primary/20">
       <TopHeader />
-      <main className="flex-1 overflow-auto bg-background p-4 md:p-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">
-              Create a new short link
+      
+      <main className="flex-1 relative overflow-y-auto overflow-x-hidden">
+        {/* Background Gradients */}
+        <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
+          <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-primary/10 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-lighten" />
+          <div className="absolute top-1/2 -left-1/4 w-1/2 h-1/2 bg-blue-500/10 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-lighten" />
+        </div>
+
+        <div className="container max-w-5xl mx-auto px-4 py-12 md:py-24 flex flex-col items-center">
+          
+          {/* Header Section */}
+          <div className="text-center max-w-3xl mx-auto mb-10 animate-appear">
+            <div className="inline-flex items-center justify-center p-2 mb-6 rounded-full bg-primary/5 text-primary border border-primary/10">
+              <Sparkles className="w-4 h-4 mr-2" />
+              <span className="text-sm font-medium">Simple, fast, and secure link shortening</span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent">
+              Shorten Your Links, <br /> Expand Your Reach
             </h1>
-            <p className="text-muted-foreground text-sm md:text-lg">
-              Paste your long URL below and we'll create a short, shareable link
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Transform long, ugly URLs into short, trackable links in seconds. 
+              Perfect for social media, marketing campaigns, and more.
             </p>
           </div>
 
-          {/* Shortener Form */}
-          <Card className="p-4 md:p-8 mb-8 shadow-lg border border-border bg-card">
-            <form onSubmit={handleShorten} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="url" className="text-sm font-medium">
-                  Paste your link
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input
-                    id="url"
-                    type="url"
-                    placeholder="https://example.com/very/long/url"
-                    value={longUrl}
-                    onChange={(e) => setLongUrl(e.target.value)}
-                    disabled={isLoading}
-                    className="flex-1"
-                  />
+          {/* Main Card */}
+          <Card className="w-full max-w-2xl p-2 md:p-3 glass-card shadow-2xl animate-appear delay-100 mb-16 rounded-2xl">
+            <div className="bg-background/50 rounded-xl p-6 md:p-8 border border-white/10">
+              <form onSubmit={handleShorten} className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative group flex-1">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                      <Link2 className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    </div>
+                    <Input
+                      id="url"
+                      type="url"
+                      placeholder="Paste your long URL here..."
+                      value={longUrl}
+                      onChange={(e) => setLongUrl(e.target.value)}
+                      disabled={isLoading}
+                      className="pl-12 h-14 text-lg bg-background/50 border-input/50 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-xl w-full"
+                    />
+                  </div>
+                  
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 md:px-8 bg-primary hover:bg-primary/90 whitespace-nowrap w-full sm:w-auto"
+                    size="lg"
+                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 active:scale-95 shrink-0"
                   >
-                    {isLoading ? "Shortening..." : "Shorten it"}
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                         <span>Shortening...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>Shorten URL</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
                   </Button>
                 </div>
-              </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-            </form>
+                
+                {error && <p className="text-sm text-destructive font-medium animate-appear pl-1">{error}</p>}
+              </form>
+            </div>
           </Card>
 
-          {/* Feature Cards */}
+          {/* Features Grid */}
           {links.length === 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card className="p-6 text-center border border-border bg-card">
-                <div className="inline-block p-3 bg-primary/10 rounded-lg mb-4">
-                  ⚡
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl animate-appear delay-200">
+              {[
+                { icon: QrCode, title: "QR Codes", desc: "Generate instant QR codes for your short links to share offline." },
+                { icon: BarChart3, title: "Analytics", desc: "Track clicks, locations, and devices in real-time." },
+                { icon: Link2, title: "Custom Aliases", desc: "Customize your short links to match your brand." }
+              ].map((feature, i) => (
+                <div key={i} className="group p-6 rounded-2xl border border-border/50 bg-card/30 hover:bg-card/50 transition-colors backdrop-blur-sm">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground text-sm">{feature.desc}</p>
                 </div>
-                <h3 className="font-semibold mb-2">QR Codes</h3>
-                <p className="text-sm text-muted-foreground">
-                  Generate QR codes from any short link
-                </p>
-              </Card>
-              <Card className="p-6 text-center border border-border bg-card">
-                <div className="inline-block p-3 bg-primary/10 rounded-lg mb-4">
-                  📊
-                </div>
-                <h3 className="font-semibold mb-2">Analytics</h3>
-                <p className="text-sm text-muted-foreground">
-                  Track clicks and engagement metrics
-                </p>
-              </Card>
+              ))}
             </div>
           )}
 
           {/* Recent Links */}
           {links.length > 0 && (
-            <div>
-              <h2 className="text-lg md:text-xl font-semibold mb-4">
-                Your recent links
-              </h2>
-              <div className="space-y-2">
+             <div className="w-full max-w-2xl animate-appear delay-200">
+              <div className="flex items-center justify-between mb-4 px-2">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <span className="w-2 h-8 rounded-full bg-primary" />
+                  Recent Links
+                </h2>
+                <Link href="/links" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                  View all
+                </Link>
+              </div>
+              
+              <div className="space-y-3">
                 {links.map((link, index) => (
-                  <Card
+                  <div
                     key={link.id || link.shortCode || index}
-                    className="p-3 md:p-4 border border-border bg-card"
+                    className="group relative p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
-                      <div className="flex-1 min-w-0 w-full">
-                        <p className="font-mono text-sm font-semibold text-primary truncate">
-                          {link.shortUrl ? (
-                            link.shortUrl.replace(/^https?:\/\//, "")
-                          ) : (
-                            `shortenit.freaks.dev/s/${link.shortCode}`
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <a 
+                            href={link.shortUrl || `${window.location.origin}/s/${link.shortCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-lg font-bold text-primary hover:underline hover:text-primary/80 truncate"
+                          >
+                             {link.shortUrl ? link.shortUrl.replace(/^https?:\/\//, "") : `shortenit.freaks.dev/s/${link.shortCode}`}
+                          </a>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
+                            Active
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate max-w-[90%]">
                           {link.longUrl}
                         </p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleCopy(
-                            link.shortUrl || `${window.location.origin}/${link.shortCode}`,
-                            link.id || link.shortCode
-                          )
-                        }
-                        className="shrink-0 whitespace-nowrap w-full sm:w-auto gap-2"
-                      >
-                        {copiedId === (link.id || link.shortCode) ? (
-                          <>
-                            <Check className="w-4 h-4 text-green-500" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleCopy(link.shortUrl || `${window.location.origin}/${link.shortCode}`, link.id || link.shortCode)}
+                          className={cn(
+                            "h-9 w-9 rounded-lg transition-all", 
+                            copiedId === (link.id || link.shortCode) ? "text-green-600 bg-green-50" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {copiedId === (link.id || link.shortCode) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                         <Link href={`/links`}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
+                               <BarChart3 className="w-4 h-4" />
+                            </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
           )}
+
         </div>
       </main>
-    </>
+    </div>
   );
 }

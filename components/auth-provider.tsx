@@ -28,7 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    setMounted(true);
+    // Avoid synchronous setState warning
+    const timer = setTimeout(() => setMounted(true), 0);
     const storedUser = localStorage.getItem("auth-user");
     const token = localStorage.getItem("auth-token");
 
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setIsLoading(false);
+    return () => clearTimeout(timer);
   }, []);
 
   const login = (userData: User, token: string) => {
