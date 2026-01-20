@@ -152,14 +152,9 @@ export default function LoginPage() {
                 {/* Visual Fake Data/Graph at bottom for effect */}
                 <div className="bg-muted/30 p-4 border-t border-white/5 flex items-center justify-between gap-4">
                    <div className="flex -space-x-2">
-                      {[1,2,3].map(i => (
-                        <div key={i} className={`w-8 h-8 rounded-full border-2 border-background bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold z-${10-i}`}>
-                           U{i}
-                        </div>
-                      ))}
                    </div>
                    <div className="text-xs font-medium text-muted-foreground">
-                      Trusted by 10,000+ users
+                      Build For AU Students
                    </div>
                 </div>
              </Card>

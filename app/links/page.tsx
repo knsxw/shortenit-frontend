@@ -94,7 +94,7 @@ export default function LinksPage() {
   const fetchUrls = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`);
       if (response.ok) {
         const data = await response.json();
         const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
@@ -381,28 +381,84 @@ export default function LinksPage() {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalElements > 0 && (
              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
                 <div className="text-sm text-muted-foreground">
                     Showing {page * size + 1} to {Math.min((page + 1) * size, totalElements)} of {totalElements}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-1">
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={() => setPage(Math.max(0, page - 1))}
                         disabled={page === 0}
+                        className="h-8 w-8"
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <div className="flex items-center px-4 text-sm font-medium">
-                        Page {page + 1} of {totalPages}
+                    
+                    <div className="flex items-center gap-1">
+                        {(() => {
+                           const items = [];
+                           const maxVisible = 5;
+                           
+                           // Logic for simpler pagination: 
+                           // If totalPages <= maxVisible, show all.
+                           // Else show [1] ... [current-1] [current] [current+1] ... [last]
+                           
+                           if (totalPages <= maxVisible) {
+                             for (let i = 0; i < totalPages; i++) {
+                               items.push(i);
+                             }
+                           } else {
+                             // Always include first page
+                             items.push(0);
+                             
+                             if (page > 2) {
+                               items.push('ellipsis-start');
+                             }
+                             
+                             // Middle items
+                             const start = Math.max(1, page - 1);
+                             const end = Math.min(totalPages - 2, page + 1);
+                             
+                             for (let i = start; i <= end; i++) {
+                               items.push(i);
+                             }
+                             
+                             if (page < totalPages - 3) {
+                               items.push('ellipsis-end');
+                             }
+                             
+                             // Always include last page
+                             items.push(totalPages - 1);
+                           }
+                           
+                           return items.map((item, idx) => {
+                             if (typeof item === 'string') {
+                               return <span key={item} className="px-2 text-muted-foreground">...</span>;
+                             }
+                             return (
+                               <Button
+                                 key={item}
+                                 variant={page === item ? "default" : "outline"}
+                                 size="icon"
+                                 onClick={() => setPage(item)}
+                                 className="h-8 w-8"
+                               >
+                                 {item + 1}
+                               </Button>
+                             );
+                           });
+                        })()}
                     </div>
+
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                         disabled={page >= totalPages - 1}
+                        className="h-8 w-8"
                     >
                         <ChevronRight className="w-4 h-4" />
                     </Button>

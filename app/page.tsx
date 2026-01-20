@@ -184,7 +184,7 @@ export default function Home() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span>Shorten URL</span>
+                        <span>Shorten It</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
                     )}
