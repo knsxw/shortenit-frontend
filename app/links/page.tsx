@@ -6,9 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Actually, looking at the file list, we DON'T have a dialog component in ui folder.
-// I will implement a custom modal inside this file to avoid dependency issues or use simple state.
+import TopHeader from "@/components/top-header";
 
 interface Url {
   id: string;
@@ -207,8 +205,10 @@ export default function LinksPage() {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-background p-4 md:p-8 space-y-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="flex flex-col h-screen bg-background font-sans">
+      <TopHeader />
+      <div className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Links</h1>
         </header>
@@ -505,6 +505,7 @@ export default function LinksPage() {
             </Card>
         </div>
       )}
+      </div>
     </div>
   );
 }

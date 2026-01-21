@@ -25,11 +25,11 @@ export default function TopHeader() {
       {/* Left - Search */}
       <div className="flex-1 max-w-md">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          {/* <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="Search..."
             className="pl-10 bg-muted border-border"
-          />
+          /> */}
         </div>
       </div>
 
