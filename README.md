@@ -114,9 +114,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 💻 Author
+## 🤝 Contributors
 
-#### Khine Khant
+<a href="https://github.com/shortenit/shortenit-frontend/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=shortenit/shortenit-frontend" />
+</a>
 
 ---
 
