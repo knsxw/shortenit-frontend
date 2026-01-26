@@ -117,7 +117,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🤝 Contributors
 
 <a href="https://github.com/shortenit/shortenit-frontend/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=shortenit/shortenit-frontend" />
+  <img src="https://contrib.freaks.dev/shortenit/shortenit-frontend" />
 </a>
 
 ---
