@@ -13,6 +13,12 @@ function CallbackContent() {
     const accessToken = searchParams.get("accessToken");
     const refreshToken = searchParams.get("refreshToken");
     const userEmail = searchParams.get("user");
+    
+    console.log("Callback triggered. Params:", {
+        accessToken: accessToken ? "present" : "missing",
+        refreshToken: refreshToken ? "present" : "missing",
+        userEmail
+    });
 
     if (accessToken && userEmail) {
       // Construct a temporary user object.
