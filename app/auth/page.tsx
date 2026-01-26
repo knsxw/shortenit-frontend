@@ -8,30 +8,12 @@ import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  // const { login } = useAuth(); // Not needed for redirect flow currently
 
-  const handleMicrosoftLogin = async () => {
+  const handleMicrosoftLogin = () => {
     setIsLoading(true);
-
-    try {
-      // Simulate authentication
-      await new Promise((resolve) => setTimeout(resolve, 800)); // Quicker animation
-
-      // Store mock user session
-      const mockUser = {
-        id: "user-" + Date.now(),
-        name: "Khine Khant",
-        email: "u6611718@au.edu.com",
-        avatar: "K",
-        loginTime: new Date().toISOString(),
-      };
-      const mockToken = "mock-token-" + Date.now();
-
-      login(mockUser, mockToken);
-    } catch (error) {
-      console.error("Login failed:", error);
-      setIsLoading(false);
-    }
+    // Redirect to backend OAuth2 endpoint to initiate Microsoft login flow
+    window.location.href = "/oauth2/authorization/microsoft";
   };
 
   return (
@@ -117,7 +99,7 @@ export default function LoginPage() {
                 <div className="p-8 space-y-8">
                    <div className="text-center">
                       <div className="w-16 h-16 bg-gradient-to-br from-primary to-blue-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-6 transform rotate-3 hover:rotate-6 transition-transform">
-                          <span className="text-3xl font-bold text-white">S</span>
+                          <span className="text-3xl font-bold text-white">K</span>
                       </div>
                       <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
                       <p className="text-muted-foreground">Sign in to your dashboard</p>

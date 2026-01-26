@@ -4,11 +4,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
-  avatar: string;
-  loginTime: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -30,19 +29,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Avoid synchronous setState warning
     const timer = setTimeout(() => setMounted(true), 0);
-    const storedUser = localStorage.getItem("auth-user");
-    const token = localStorage.getItem("auth-token");
 
-    if (storedUser && token) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse user data:", error);
-        localStorage.removeItem("auth-user");
-        localStorage.removeItem("auth-token");
+    const checkAuth = async () => {
+      const token = localStorage.getItem("auth-token");
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
-    }
-    setIsLoading(false);
+
+      try {
+        const response = await fetch("/api/auth/me", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          // Optional: Update localStorage if you still use it for other things
+          localStorage.setItem("auth-user", JSON.stringify(userData));
+        } else {
+          // If 401/403, we are not logged in. Clear local state.
+          setUser(null);
+          localStorage.removeItem("auth-user");
+          localStorage.removeItem("auth-token");
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
     return () => clearTimeout(timer);
   }, []);
 
@@ -57,6 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("auth-user");
     localStorage.removeItem("auth-token");
     setUser(null);
+    // Call API logout if exists
+    // fetch('/api/auth/logout', { method: 'POST' });
     router.push("/auth");
   };
 

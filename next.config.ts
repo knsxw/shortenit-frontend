@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
       {
         source: "/s/:path*",
         destination: "https://shortenit.freaks.dev/s/:path*",
+      },
+      {
+        source: "/oauth2/success.html",
+        destination: "/auth/callback",
+      },
+      {
+        source: "/oauth2/:path*",
+        destination: "https://shortenit.freaks.dev/oauth2/:path*",
       }
     ];
   },
