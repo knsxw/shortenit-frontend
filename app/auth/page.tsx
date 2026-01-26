@@ -136,7 +136,7 @@ export default function LoginPage() {
                    <div className="flex -space-x-2">
                    </div>
                    <div className="text-xs font-medium text-muted-foreground">
-                      Build For AU Students
+                      Build For AU Students Test
                    </div>
                 </div>
              </Card>
