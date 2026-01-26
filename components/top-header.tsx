@@ -18,19 +18,13 @@ export default function TopHeader() {
 
   if (!user) return null;
 
-  const userInitial = user.name.charAt(0).toUpperCase();
+  const userInitial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <header className="bg-background border-b border-border px-6 py-4 flex items-center justify-between">
-      {/* Left - Search */}
+    <header className="bg-background border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+      {/* Left - Spacer or Breadcrumbs could go here */}
       <div className="flex-1 max-w-md">
-        <div className="relative">
-          {/* <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="pl-10 bg-muted border-border"
-          /> */}
-        </div>
+       
       </div>
 
       {/* Right - Actions & Profile */}
@@ -38,33 +32,43 @@ export default function TopHeader() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
+            className="flex items-center gap-3 p-1.5 pr-3 hover:bg-muted/50 rounded-full border border-transparent hover:border-border transition-all duration-200 group"
           >
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:shadow-md transition-shadow">
               {userInitial}
             </div>
-            <span className="text-sm font-medium text-foreground">
-              {user.name}
-            </span>
-            <span className="text-lg">▼</span>
+            <div className="flex flex-col items-start leading-none gap-0.5">
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                {user.name}
+                </span>
+            </div>
+            <span className="text-muted-foreground text-xs opacity-50 group-hover:opacity-100 transition-opacity">▼</span>
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-background rounded-lg shadow-lg border border-border z-50">
-              <div className="p-3 border-b border-border">
-                <p className="text-sm font-medium text-foreground">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-muted transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
+            <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 mt-2 w-56 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-4 border-b border-border bg-muted/30">
+                    <p className="text-sm font-semibold text-foreground">
+                    {user.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <div className="mt-2 text-[10px] uppercase font-bold tracking-wider text-primary/80 bg-primary/10 inline-block px-2 py-0.5 rounded-full">
+                        {user.role} Account
+                    </div>
+                </div>
+                <div className="p-1">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
+                </div>
+                </div>
+            </>
           )}
         </div>
       </div>

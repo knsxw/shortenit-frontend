@@ -3,19 +3,25 @@
 import TopHeader from "@/components/top-header";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
-  const [email, setEmail] = useState("u6611718@au.edu");
-  const [displayName, setDisplayName] = useState("Khine Khant");
+  const { user } = useAuth();
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [saved, setSaved] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (user) {
+        setEmail(user.email);
+        setDisplayName(user.name);
+    }
+  }, [user]);
 
   if (!mounted) {
     return null;
