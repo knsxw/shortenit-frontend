@@ -15,6 +15,7 @@ interface LinkItem {
   shortCode: string;
   shortUrl?: string;
   createdAt: string;
+  title?: string;
 }
 
 interface RawApiResponse {
@@ -23,10 +24,12 @@ interface RawApiResponse {
   shortCode: string;
   shortUrl?: string;
   createdAt: string;
+  title?: string;
 }
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState("");
+  const [title, setTitle] = useState("");
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,6 +56,7 @@ export default function Home() {
               shortCode: link.shortCode,
               shortUrl: link.shortUrl,
               createdAt: link.createdAt,
+              title: link.title,
             }))
             .reverse()
             .slice(0, 5)
@@ -80,16 +84,35 @@ export default function Home() {
     }
 
     setIsLoading(true);
+    const token = localStorage.getItem("auth-token");
+    
     try {
+      // 1. Validate URL and fetch Title
+      const validationRes = await fetch("/internal/validate-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: longUrl }),
+      });
+
+      if (!validationRes.ok) {
+        const errorData = await validationRes.json();
+        throw new Error(errorData.message || "Invalid or unreachable URL");
+      }
+
+      const { title: fetchedTitle } = await validationRes.json();
+
+      // 2. Shorten (using correct POST /api/urls endpoint)
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/shorten`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
           },
           body: JSON.stringify({
             originalUrl: longUrl,
+            title: title || fetchedTitle || undefined,
           }),
         }
       );
@@ -105,10 +128,12 @@ export default function Home() {
         shortCode: data.shortCode,
         shortUrl: data.shortUrl,
         createdAt: data.createdAt,
+        title: data.title,
       };
 
       setLinks([newLink, ...links]);
       setLongUrl("");
+      setTitle("");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
@@ -251,7 +276,9 @@ export default function Home() {
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground truncate max-w-[90%]">
-                          {link.longUrl}
+                          {link.title ? (
+                            <span className="font-medium text-foreground">{link.title} <span className="text-muted-foreground font-normal opacity-50">• {link.longUrl}</span></span>
+                          ) : link.longUrl}
                         </p>
                       </div>
 

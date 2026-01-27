@@ -16,12 +16,14 @@ interface Url {
   clickCount: number;
   createdAt: string;
   customAlias?: string;
+  title?: string;
 }
 
 export default function LinksPage() {
   const [urls, setUrls] = useState<Url[]>([]);
   const [displayedUrls, setDisplayedUrls] = useState<Url[]>([]);
   const [newUrl, setNewUrl] = useState("");
+  const [newUrlTitle, setNewUrlTitle] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showBulk, setShowBulk] = useState(false);
@@ -104,6 +106,7 @@ export default function LinksPage() {
           clickCount: link.clickCount || 0,
           createdAt: link.createdAt,
           customAlias: link.customAlias,
+          title: link.title,
         })).reverse();
         setUrls(mappedUrls);
       }
@@ -118,13 +121,35 @@ export default function LinksPage() {
     e.preventDefault();
     if (!newUrl) return;
 
+    const token = localStorage.getItem("auth-token");
+    setLoading(true);
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/shorten`, {
+      // 1. Validate URL and fetch Title via internal API
+      const validationRes = await fetch("/internal/validate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: newUrl }),
+      });
+
+      if (!validationRes.ok) {
+        const errorData = await validationRes.json();
+        throw new Error(errorData.message || "Invalid or unreachable URL");
+      }
+
+      const { title: fetchedTitle } = await validationRes.json();
+
+      // 2. Proceed to shorten with the fetched title
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+        },
         body: JSON.stringify({
           originalUrl: newUrl,
           customAlias: customAlias || undefined,
+          title: newUrlTitle || fetchedTitle || undefined,
         }),
       });
 
@@ -134,12 +159,15 @@ export default function LinksPage() {
       }
 
       setNewUrl("");
+      setNewUrlTitle("");
       setCustomAlias("");
       setShowAdvanced(false);
       fetchUrls(); // Refresh list
     } catch (error: any) {
       console.error("Failed to shorten URL", error);
       setErrorObj({ isOpen: true, title: "Error", message: error.message });
+    } finally {
+        setLoading(false);
     }
   };
 
