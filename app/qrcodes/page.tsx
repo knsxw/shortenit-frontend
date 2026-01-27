@@ -81,17 +81,23 @@ function QRCodesContent() {
   useEffect(() => {
     const fetchLinks = async () => {
       try {
+        const token = localStorage.getItem("auth-token");
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`,
+          {
+            headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+            }
+          }
         );
         if (response.ok) {
           const data = await response.json();
           const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
           const fetchedUrls = linksList.map((link: any) => ({
-            shortCode: link.shortCode,
+            shortCode: link.code || link.shortCode,
             shortUrl:
               link.shortUrl ||
-              `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/s/${link.shortCode}`,
+              `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/s/${link.code || link.shortCode}`,
             originalUrl: link.originalUrl,
           })).reverse();
           

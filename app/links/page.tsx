@@ -93,16 +93,21 @@ export default function LinksPage() {
 
   const fetchUrls = async () => {
     setLoading(true);
+    const token = localStorage.getItem("auth-token");
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/all`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+      });
       if (response.ok) {
         const data = await response.json();
         const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
         const mappedUrls = linksList.map((link: any) => ({
           id: link.id,
           originalUrl: link.originalUrl,
-          shortCode: link.shortCode,
-          shortUrl: link.shortUrl || `${window.location.origin}/s/${link.shortCode}`,
+          shortCode: link.code || link.shortCode,
+          shortUrl: link.shortUrl || `${window.location.origin}/s/${link.code || link.shortCode}`,
           clickCount: link.clickCount || 0,
           createdAt: link.createdAt,
           customAlias: link.customAlias,
@@ -176,14 +181,18 @@ export default function LinksPage() {
     if (!bulkUrls) return;
 
     const urlsToShorten = bulkUrls.split('\n').filter(u => u.trim());
+    const token = localStorage.getItem("auth-token");
     
     // Process sequentially or parallel. Parallel is better for UX.
     // Since backend might not have bulk endpoint, we loop.
     try {
       await Promise.all(urlsToShorten.map(url => 
-         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/shorten`, {
+         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
             body: JSON.stringify({ originalUrl: url }),
          })
       ));
@@ -207,12 +216,17 @@ export default function LinksPage() {
     const linkToDelete = urls.find(u => u.shortCode === deleteId);
     if (!linkToDelete) return;
 
+    const token = localStorage.getItem("auth-token");
+
     try {
         // Attempt to delete via API. If API doesn't exist, we just remove from state as per previous behavior, 
         // but since this is "Pro" mode, let's try a DELETE request.
         // Assuming DELETE /api/urls/{shortCode}
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/${deleteId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+            }
         });
         
         // If 404/405, we fallback to local delete for demo purposes if valid

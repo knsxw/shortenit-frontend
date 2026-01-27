@@ -41,8 +41,14 @@ export default function Home() {
 
   const fetchLinks = async () => {
     try {
+      const token = localStorage.getItem("auth-token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/recent?page=0&size=5`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=5`,
+        {
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -50,10 +56,10 @@ export default function Home() {
         
         setLinks(
           linksList
-            .map((link: RawApiResponse) => ({
+            .map((link: any) => ({
               id: link.id,
               longUrl: link.originalUrl,
-              shortCode: link.shortCode,
+              shortCode: link.code || link.shortCode,
               shortUrl: link.shortUrl,
               createdAt: link.createdAt,
               title: link.title,
@@ -87,7 +93,7 @@ export default function Home() {
     const token = localStorage.getItem("auth-token");
     
     try {
-      // 1. Validate URL and fetch Title
+      // 1. Validate URL and fetch Title via internal API
       const validationRes = await fetch("/internal/validate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,7 +131,7 @@ export default function Home() {
       const newLink: LinkItem = {
         id: data.id,
         longUrl: data.originalUrl,
-        shortCode: data.shortCode,
+        shortCode: data.code,
         shortUrl: data.shortUrl,
         createdAt: data.createdAt,
         title: data.title,

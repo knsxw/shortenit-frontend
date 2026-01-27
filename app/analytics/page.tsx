@@ -60,8 +60,14 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchLinks = async () => {
       try {
+        const token = localStorage.getItem("auth-token");
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`,
+          {
+            headers: {
+                "Authorization": token ? `Bearer ${token}` : ""
+            }
+          }
         );
         if (response.ok) {
           const data = await response.json();

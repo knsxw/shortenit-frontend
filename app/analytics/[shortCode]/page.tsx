@@ -64,9 +64,14 @@ export default function LinkAnalytics() {
 
     const fetchAnalytics = async (code: string) => {
         try {
+            const token = localStorage.getItem("auth-token");
             // Note: The backend endpoint might be /api/urls/{code}/analytics or similar.
             // Adjusting to match probable backend structure based on previous interactions.
-            const response = await fetch(`${(process.env.NEXT_PUBLIC_API_BASE_URL === "undefined" ? "" : process.env.NEXT_PUBLIC_API_BASE_URL) || ""}/api/analytics/${code}`);
+            const response = await fetch(`${(process.env.NEXT_PUBLIC_API_BASE_URL === "undefined" ? "" : process.env.NEXT_PUBLIC_API_BASE_URL) || ""}/api/analytics/${code}`, {
+                headers: {
+                    "Authorization": token ? `Bearer ${token}` : ""
+                }
+            });
             
             if (!response.ok) {
                 if (response.status === 404) throw new Error("Analytics not found");
