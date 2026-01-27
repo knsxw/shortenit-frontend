@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 
@@ -8,8 +8,11 @@ function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
+  const processedRef = useRef(false);
 
   useEffect(() => {
+    if (processedRef.current) return;
+
     const accessToken = searchParams.get("accessToken");
     const refreshToken = searchParams.get("refreshToken");
     const userEmail = searchParams.get("user");
@@ -21,6 +24,7 @@ function CallbackContent() {
     });
 
     if (accessToken && userEmail) {
+      processedRef.current = true;
       // Construct a temporary user object.
       // We will fetch the full profile from /api/auth/me immediately after.
       const tempUser = {
@@ -32,9 +36,12 @@ function CallbackContent() {
 
       login(tempUser, accessToken);
       // Login function redirects to /, but we rely on AuthProvider to check /api/auth/me
-    } else {
-      console.error("Missing tokens in callback URL");
-      router.push("/auth?error=missing_token");
+      // Force redirect just in case
+      window.location.href = "/";
+    } else if (!accessToken) {
+        // Only error if we really don't have tokens and we haven't processed yet
+         console.error("Missing tokens in callback URL");
+         // router.push("/auth?error=missing_token");
     }
   }, [searchParams, login, router]);
 
