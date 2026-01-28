@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "next-themes";
-import { Trash2, Copy, Check, Plus, Key } from "lucide-react";
+import { Trash2, Copy, Check, Plus, Key, Eye, EyeOff } from "lucide-react";
 
 interface ApiKey {
   id: string;
@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const [loadingKeys, setLoadingKeys] = useState(false);
   const [creatingKey, setCreatingKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setMounted(true);
@@ -138,6 +139,16 @@ export default function SettingsPage() {
     navigator.clipboard.writeText(text);
     setCopiedKey(true);
     setTimeout(() => setCopiedKey(false), 2000);
+  };
+
+  const toggleReveal = (id: string) => {
+    const newRevealed = new Set(revealedKeys);
+    if (newRevealed.has(id)) {
+        newRevealed.delete(id);
+    } else {
+        newRevealed.add(id);
+    }
+    setRevealedKeys(newRevealed);
   };
 
   if (!mounted) {
@@ -299,18 +310,39 @@ export default function SettingsPage() {
                                 {/* Key Value Display */}
                                 <div className="flex items-center gap-2 bg-muted/30 border border-border p-2 rounded relative group">
                                     <code className="flex-1 font-mono text-xs sm:text-sm break-all text-muted-foreground">
-                                        {key.value || `${key.prefix}*************************`}
+                                        {revealedKeys.has(key.id) 
+                                            ? (key.value || "Hidden by server") 
+                                            : (key.value ? "•".repeat(key.value.length) : `${key.prefix}*************************`)
+                                        }
                                     </code>
-                                    {key.value && (
+                                    <div className="flex items-center gap-1">
                                         <Button 
                                             variant="ghost" 
                                             size="icon" 
                                             className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                            onClick={() => copyToClipboard(key.value!)}
+                                            onClick={() => toggleReveal(key.id)}
+                                            title={revealedKeys.has(key.id) ? "Hide key" : "Reveal key"}
                                         >
-                                           <Copy className="w-3 h-3" />
+                                           {revealedKeys.has(key.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                                         </Button>
-                                    )}
+                                        
+                                        {/* Show Copy button if we have a value OR if user wants to copy what is likely masked? 
+                                            Usually only useful to copy the real value. 
+                                            If we don't have the value, copying the mask is useless. 
+                                            Only show copy if we have value.
+                                        */}
+                                        {key.value && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                                onClick={() => copyToClipboard(key.value!)}
+                                                title="Copy key"
+                                            >
+                                               {copiedKey ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
