@@ -12,7 +12,7 @@ import { Trash2, Copy, Check, Plus, Key, Eye, EyeOff } from "lucide-react";
 interface ApiKey {
   id: string;
   name: string;
-  prefix: string;
+  maskedKey: string;
   value?: string; // Full key value if available/stored
   createdAt: string;
   expiresAt: string | null;
@@ -31,7 +31,6 @@ export default function SettingsPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKeyName, setNewKeyName] = useState("");
   const [expirationDays, setExpirationDays] = useState("30");
-  const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [loadingKeys, setLoadingKeys] = useState(false);
   const [creatingKey, setCreatingKey] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -57,7 +56,16 @@ export default function SettingsPage() {
         });
         if (response.ok) {
             const data = await response.json();
-            setApiKeys(Array.isArray(data) ? data : []);
+            const mappedKeys = (Array.isArray(data) ? data : []).map((k: any) => ({
+                id: k.id.toString(), // Ensure string for consistency
+                name: k.name,
+                maskedKey: k.maskedKey || "wk_...****",
+                value: k.apiKey || k.key || k.token, // Try multiple fields for full key
+                createdAt: k.createdAt,
+                expiresAt: k.expiresAt,
+                lastUsedAt: k.lastUsedAt
+            }));
+            setApiKeys(mappedKeys);
         }
     } catch (error) {
         console.error("Failed to fetch API keys", error);
@@ -71,7 +79,6 @@ export default function SettingsPage() {
     if (!newKeyName.trim()) return;
 
     setCreatingKey(true);
-    setCreatedKey(null);
 
     try {
         const token = localStorage.getItem("auth-token");
@@ -89,17 +96,12 @@ export default function SettingsPage() {
 
         if (response.ok) {
             const data = await response.json();
-            // Backend returns full key on creation. We add it to our list locally so user can see/copy it immediately.
-            // Note: Subsequent fetches might only return masked keys or prefix depending on backend security implementation.
-            // Since user wants to "copy anytime", we assume backend EITHER returns full keys on list OR we rely on this local state for the session 
-            // and warn user (or maybe the user requirement implies backend stores full keys? typical insecure but requested).
-            // Let's assume we just prepend this new key with its value to the list.
             
             const newKey: ApiKey = {
-                id: data.id || Date.now().toString(),
+                id: (data.id || Date.now()).toString(),
                 name: newKeyName,
-                prefix: data.prefix || (data.key ? data.key.substring(0, 8) : "wk_..."),
-                value: data.key || data.token, // Store the full key in state
+                maskedKey: data.maskedKey || "wk_...****",
+                value: data.apiKey || data.key || data.token, 
                 createdAt: new Date().toISOString(),
                 expiresAt: expirationDays ? new Date(Date.now() + parseInt(expirationDays) * 86400000).toISOString() : null,
                 lastUsedAt: null
@@ -107,7 +109,6 @@ export default function SettingsPage() {
 
             setApiKeys([newKey, ...apiKeys]);
             setNewKeyName("");
-            // We do NOT call fetchApiKeys() immediately to preserve the full 'value' in our local state for this session.
         }
     } catch (error) {
         console.error("Failed to create API key", error);
@@ -312,7 +313,7 @@ export default function SettingsPage() {
                                     <code className="flex-1 font-mono text-xs sm:text-sm break-all text-muted-foreground">
                                         {revealedKeys.has(key.id) 
                                             ? (key.value || "Hidden by server") 
-                                            : (key.value ? "•".repeat(key.value.length) : `${key.prefix}*************************`)
+                                            : (key.value ? "•".repeat(key.value.length) : key.maskedKey)
                                         }
                                     </code>
                                     <div className="flex items-center gap-1">
@@ -331,17 +332,15 @@ export default function SettingsPage() {
                                             If we don't have the value, copying the mask is useless. 
                                             Only show copy if we have value.
                                         */}
-                                        {key.value && (
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                                onClick={() => copyToClipboard(key.value!)}
-                                                title="Copy key"
-                                            >
-                                               {copiedKey ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                                            </Button>
-                                        )}
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                            onClick={() => copyToClipboard(key.value || "")}
+                                            title="Copy key"
+                                        >
+                                            {copiedKey ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
