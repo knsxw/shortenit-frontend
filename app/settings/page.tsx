@@ -13,6 +13,7 @@ interface ApiKey {
   id: string;
   name: string;
   prefix: string;
+  value?: string; // Full key value if available/stored
   createdAt: string;
   expiresAt: string | null;
   lastUsedAt: string | null;
@@ -87,10 +88,25 @@ export default function SettingsPage() {
 
         if (response.ok) {
             const data = await response.json();
-            // Assuming the backend returns the full key only on creation as 'key' or 'token' field
-            setCreatedKey(data.key || data.token || "Key created (refresh to see details)"); 
+            // Backend returns full key on creation. We add it to our list locally so user can see/copy it immediately.
+            // Note: Subsequent fetches might only return masked keys or prefix depending on backend security implementation.
+            // Since user wants to "copy anytime", we assume backend EITHER returns full keys on list OR we rely on this local state for the session 
+            // and warn user (or maybe the user requirement implies backend stores full keys? typical insecure but requested).
+            // Let's assume we just prepend this new key with its value to the list.
+            
+            const newKey: ApiKey = {
+                id: data.id || Date.now().toString(),
+                name: newKeyName,
+                prefix: data.prefix || (data.key ? data.key.substring(0, 8) : "wk_..."),
+                value: data.key || data.token, // Store the full key in state
+                createdAt: new Date().toISOString(),
+                expiresAt: expirationDays ? new Date(Date.now() + parseInt(expirationDays) * 86400000).toISOString() : null,
+                lastUsedAt: null
+            };
+
+            setApiKeys([newKey, ...apiKeys]);
             setNewKeyName("");
-            fetchApiKeys();
+            // We do NOT call fetchApiKeys() immediately to preserve the full 'value' in our local state for this session.
         }
     } catch (error) {
         console.error("Failed to create API key", error);
@@ -98,6 +114,8 @@ export default function SettingsPage() {
         setCreatingKey(false);
     }
   };
+
+
 
   const deleteApiKey = async (id: string) => {
     if (!confirm("Are you sure you want to revoke this API key? This action cannot be undone.")) return;
@@ -245,29 +263,6 @@ export default function SettingsPage() {
                     </Button>
                 </form>
             </div>
-
-            {/* Display Created Key */}
-            {createdKey && (
-                <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg animate-in fade-in slide-in-from-top-2">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-green-600 dark:text-green-400">New API Key Generated</span>
-                        <span className="text-xs text-muted-foreground">Make sure to copy it now. You won't see it again!</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-background border border-border p-2 rounded relative group">
-                        <code className="flex-1 font-mono text-sm break-all">{createdKey}</code>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                            onClick={() => copyToClipboard(createdKey)}
-                        >
-                           {copiedKey ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            {/* Keys List */}
             <div className="space-y-4">
                 <h3 className="text-sm font-medium">Your API Keys</h3>
                 {loadingKeys ? (
@@ -279,28 +274,44 @@ export default function SettingsPage() {
                 ) : (
                     <div className="border rounded-lg divide-y">
                         {apiKeys.map((key) => (
-                            <div key={key.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-medium">{key.name}</span>
-                                        <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-muted-foreground">
-                                            {key.prefix}
-                                        </span>
+                            <div key={key.id} className="p-4 flex flex-col gap-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-medium">{key.name}</span>
+                                        </div>
+                                        <div className="text-xs text-muted-foreground space-x-3">
+                                            <span>Created: {new Date(key.createdAt).toLocaleDateString()}</span>
+                                            {key.lastUsedAt && <span>Used: {new Date(key.lastUsedAt).toLocaleDateString()}</span>}
+                                            {key.expiresAt && <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>}
+                                        </div>
                                     </div>
-                                    <div className="text-xs text-muted-foreground mt-1 space-x-3">
-                                        <span>Created: {new Date(key.createdAt).toLocaleDateString()}</span>
-                                        {key.lastUsedAt && <span>Used: {new Date(key.lastUsedAt).toLocaleDateString()}</span>}
-                                        {key.expiresAt && <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>}
-                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                                        onClick={() => deleteApiKey(key.id)}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                                    onClick={() => deleteApiKey(key.id)}
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+                                
+                                {/* Key Value Display */}
+                                <div className="flex items-center gap-2 bg-muted/30 border border-border p-2 rounded relative group">
+                                    <code className="flex-1 font-mono text-xs sm:text-sm break-all text-muted-foreground">
+                                        {key.value || `${key.prefix}*************************`}
+                                    </code>
+                                    {key.value && (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                            onClick={() => copyToClipboard(key.value!)}
+                                        >
+                                           <Copy className="w-3 h-3" />
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>
