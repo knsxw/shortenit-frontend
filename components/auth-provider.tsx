@@ -107,6 +107,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Prevent rendering of protected content if user is not authenticated
+  // This avoids the "flash of unauthenticated content" before the redirect happens
+  if (!user && !pathname?.startsWith("/auth")) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
