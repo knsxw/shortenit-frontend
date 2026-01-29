@@ -17,6 +17,10 @@ import {
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -113,6 +117,49 @@ export default function AnalyticsPage() {
         { name: "Other", value: unknown }
     ].filter(d => d.value > 0);
 
+    // Browser Distribution
+    const browserCounts: Record<string, number> = {};
+    data.forEach(item => {
+        item.topBrowsers.forEach(b => {
+             browserCounts[b.browser] = (browserCounts[b.browser] || 0) + b.clicks;
+        });
+    });
+    const browserData = Object.entries(browserCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5); // Top 5 browsers
+
+    // Daily Clicks (Trend)
+    const dateCounts: Record<string, number> = {};
+    data.forEach(item => {
+        Object.entries(item.clicksByDate).forEach(([date, count]) => {
+            dateCounts[date] = (dateCounts[date] || 0) + count;
+        });
+    });
+    
+    // Sort logic for dates
+    const clicksTrend = Object.entries(dateCounts)
+        .map(([date, clicks]) => ({ date, clicks }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Hourly Activity
+    const hourCounts: Record<string, number> = {};
+    const hours = Array.from({ length: 24 }, (_, i) => i.toString()); // 0-23
+    hours.forEach(h => hourCounts[h] = 0); // Init
+    
+    data.forEach(item => {
+        Object.entries(item.clicksByHour).forEach(([hour, count]) => {
+            hourCounts[hour] = (hourCounts[hour] || 0) + count;
+        });
+    });
+    
+    const hourlyActivity = Object.entries(hourCounts)
+        .map(([hour, clicks]) => ({ 
+            hour: `${hour}:00`, 
+            clicks 
+        }))
+        .sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
+
     // Top Links for Bar Chart
     const topLinks = [...data]
       .sort((a, b) => b.totalClicks - a.totalClicks)
@@ -123,17 +170,24 @@ export default function AnalyticsPage() {
         url: link.originalUrl,
       }));
       
-    // Find absolute top country
+    // Find absolute top country and list
     const countryCounts: Record<string, number> = {};
     data.forEach((item) => {
         item.topCountries.forEach((c) => {
             countryCounts[c.country] = (countryCounts[c.country] || 0) + c.clicks;
         });
     });
-    const topCountryEntry = Object.entries(countryCounts).sort((a,b) => b[1] - a[1])[0];
-    const topGlobalCountry = topCountryEntry ? topCountryEntry[0] : "N/A";
+    const topCountries = Object.entries(countryCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+        
+    const topGlobalCountry = topCountries.length > 0 ? topCountries[0].name : "N/A";
 
-    return { totalClicks, totalLinks, avgClicks, deviceData, topLinks, topGlobalCountry };
+    return { 
+        totalClicks, totalLinks, avgClicks, topGlobalCountry,
+        deviceData, browserData, clicksTrend, hourlyActivity, topLinks, topCountries
+    };
   }, [data]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -237,22 +291,27 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Bar Chart */}
-            <Card className="glass-card p-6 rounded-2xl lg:col-span-2 border-primary/10">
-               <div className="flex items-center justify-between mb-6">
+          {/* Clicks Trend Row */}
+          <Card className="glass-card p-6 rounded-2xl border-primary/10">
+             <div className="flex items-center justify-between mb-6">
                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                   <BarChart3 className="w-5 h-5 text-primary" />
-                   Top 5 Performing Links
+                   <TrendingUp className="w-5 h-5 text-primary" />
+                   Clicks Over Time
                  </h3>
-               </div>
-               <div className="h-[300px] w-full">
+             </div>
+             <div className="h-[300px] w-full">
+               {stats.clicksTrend.length > 0 ? (
                  <ResponsiveContainer width="100%" height="100%">
-                   <BarChart data={stats.topLinks} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                   <AreaChart data={stats.clicksTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                     <defs>
+                        <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
                      <XAxis 
-                        dataKey="name" 
+                        dataKey="date" 
                         stroke="currentColor" 
                         fontSize={12} 
                         tickLine={false} 
@@ -263,32 +322,89 @@ export default function AnalyticsPage() {
                         stroke="currentColor" 
                         fontSize={12} 
                         tickLine={false} 
-                        axisLine={false} 
+                        axisLine={false}
                         allowDecimals={false}
                         className="text-muted-foreground"
                      />
-                     <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
-                     <Bar 
+                     <Tooltip content={<CustomTooltip />} />
+                     <Area 
+                        type="monotone" 
                         dataKey="clicks" 
-                        fill="currentColor" 
-                        radius={[6, 6, 0, 0]} 
-                        className="fill-primary"
-                        maxBarSize={60}
+                        stroke="var(--primary)" 
+                        fillOpacity={1} 
+                        fill="url(#colorClicks)" 
+                        strokeWidth={2}
                      />
-                   </BarChart>
+                   </AreaChart>
                  </ResponsiveContainer>
+               ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                      No trend data available yet.
+                  </div>
+               )}
+             </div>
+          </Card>
+
+          {/* Detailed Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             {/* Hourly Activity */}
+            <Card className="glass-card p-6 rounded-2xl border-primary/10">
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-semibold text-lg flex items-center gap-2">
+                   <ArrowUpRight className="w-5 h-5 text-green-500" />
+                   Hourly Activity (UTC)
+                 </h3>
+               </div>
+               <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                     <BarChart data={stats.hourlyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
+                        <XAxis dataKey="hour" fontSize={10} tickLine={false} axisLine={false} className="text-muted-foreground" interval={3} />
+                        <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                        <Bar dataKey="clicks" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-green-500" />
+                     </BarChart>
+                  </ResponsiveContainer>
                </div>
             </Card>
 
+            {/* Top Countries */}
+            <Card className="glass-card p-6 rounded-2xl border-primary/10">
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-semibold text-lg flex items-center gap-2">
+                   <Globe className="w-5 h-5 text-orange-500" />
+                   Top Countries
+                 </h3>
+               </div>
+               <div className="h-[250px] w-full">
+                  {stats.topCountries.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={stats.topCountries} layout="vertical" margin={{ left: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.3} />
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" width={80} fontSize={12} tickLine={false} axisLine={false} className="text-muted-foreground" />
+                            <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                            <Bar dataKey="value" fill="currentColor" radius={[0, 4, 4, 0]} className="fill-orange-500" barSize={20} />
+                        </BarChart>
+                     </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                        No location data available.
+                    </div>
+                  )}
+               </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Device Pie Chart */}
             <Card className="glass-card p-6 rounded-2xl border-primary/10">
               <div className="flex items-center justify-between mb-6">
                  <h3 className="font-semibold text-lg flex items-center gap-2">
                    <Smartphone className="w-5 h-5 text-blue-500" />
-                   Devices
+                   Devices Distribution
                  </h3>
                </div>
-               <div className="h-[300px] w-full relative">
+               <div className="h-[250px] w-full relative">
                  {stats.deviceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -297,7 +413,7 @@ export default function AnalyticsPage() {
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={100}
+                        outerRadius={80}
                         paddingAngle={5}
                         dataKey="value"
                       >
@@ -312,11 +428,71 @@ export default function AnalyticsPage() {
                  ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-muted-foreground flex-col gap-2">
                        <Smartphone className="w-8 h-8 opacity-20" />
-                       <span className="text-sm">No device data yet</span>
+                       <span className="text-sm">No device data</span>
                     </div>
                  )}
                </div>
             </Card>
+
+            {/* Browser Distribution */}
+            <Card className="glass-card p-6 rounded-2xl border-primary/10">
+              <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-semibold text-lg flex items-center gap-2">
+                   <Globe className="w-5 h-5 text-indigo-500" />
+                   Browser Distribution
+                 </h3>
+               </div>
+               <div className="h-[250px] w-full relative">
+                 {stats.browserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.browserData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                         {stats.browserData.map((entry, index) => (
+                          <Cell key={`cell-br-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                 ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground flex-col gap-2">
+                       <Globe className="w-8 h-8 opacity-20" />
+                       <span className="text-sm">No browser data</span>
+                    </div>
+                 )}
+               </div>
+            </Card>
+
+            {/* Top Links Bar Chart */}
+             <Card className="glass-card p-6 rounded-2xl border-primary/10">
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-semibold text-lg flex items-center gap-2">
+                   <Link2 className="w-5 h-5 text-pink-500" />
+                   Top Links
+                 </h3>
+               </div>
+               <div className="h-[250px] w-full">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <BarChart data={stats.topLinks} layout="vertical" margin={{ left: 20 }}>
+                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.3} />
+                     <XAxis type="number" hide />
+                     <YAxis dataKey="name" type="category" width={60} fontSize={12} tickLine={false} axisLine={false} className="text-muted-foreground" />
+                     <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                     <Bar dataKey="clicks" fill="currentColor" radius={[0, 4, 4, 0]} className="fill-pink-500" barSize={20} />
+                   </BarChart>
+                 </ResponsiveContainer>
+               </div>
+            </Card>
+
           </div>
         </div>
       </main>
