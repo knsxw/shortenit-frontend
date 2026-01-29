@@ -10,7 +10,6 @@ import {
   Smartphone,
   MousePointer2,
   TrendingUp,
-  Calendar,
   ArrowUpRight,
   Link2,
   LayoutGrid,
@@ -28,41 +27,50 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { cn } from "@/lib/utils";
 
-interface AnalyticsSummary {
-  totalClicks: number;
-  lastClickedAt: string | null;
-  topCountry: string | null;
-  topCountryClicks: number;
-  topDeviceType: string | null;
-  topDeviceClicks: number;
-  clicksToday: number;
-  clicksThisWeek: number;
+interface DeviceStats {
+    mobile: number;
+    desktop: number;
+    tablet: number;
+    unknown: number;
+    mobilePercentage: number;
+    desktopPercentage: number;
+    tabletPercentage: number;
 }
 
-interface LinkData {
-  id: string;
-  shortCode: string;
-  originalUrl: string;
-  shortUrl: string;
-  clickCount: number;
-  createdAt: string;
-  analyticsSummary: AnalyticsSummary;
+interface TopCountry {
+    country: string;
+    clicks: number;
+    percentage: number;
+}
+
+interface AnalyticsItem {
+    code: string;
+    originalUrl: string;
+    totalClicks: number;
+    createdAt: string;
+    clicksByDate: Record<string, number>;
+    clicksByHour: Record<string, number>;
+    topCountries: TopCountry[];
+    topCities: any[];
+    deviceStats: DeviceStats;
+    topBrowsers: any[];
+    topReferrers: any[];
+    recentClicks: any[];
 }
 
 const COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#6366f1"];
 
 export default function AnalyticsPage() {
-  const [links, setLinks] = useState<LinkData[]>([]);
+  const [data, setData] = useState<AnalyticsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLinks = async () => {
+    const fetchAnalytics = async () => {
       try {
         const token = localStorage.getItem("auth-token");
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/analytics`,
           {
             headers: {
                 "Authorization": token ? `Bearer ${token}` : ""
@@ -70,26 +78,8 @@ export default function AnalyticsPage() {
           }
         );
         if (response.ok) {
-          const data = await response.json();
-          const linksList = Array.isArray(data) ? data : data?.content || data?.urls || [];
-          
-          setLinks(
-            linksList.map((link: any) => ({
-              ...link,
-              shortUrl: link.shortUrl || `${window.location.origin}/s/${link.shortCode}`,
-              // Ensure analyticsSummary exists even if null in API
-              analyticsSummary: link.analyticsSummary || {
-                totalClicks: link.clickCount || 0,
-                lastClickedAt: null,
-                topCountry: null,
-                topCountryClicks: 0,
-                topDeviceType: null,
-                topDeviceClicks: 0,
-                clicksToday: 0,
-                clicksThisWeek: 0,
-              },
-            }))
-          );
+          const result = await response.json();
+          setData(Array.isArray(result) ? result : []);
         }
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
@@ -98,48 +88,53 @@ export default function AnalyticsPage() {
       }
     };
 
-    fetchLinks();
+    fetchAnalytics();
   }, []);
 
   // Aggregations
   const stats = useMemo(() => {
-    const totalClicks = links.reduce((acc, curr) => acc + (curr.clickCount || 0), 0);
-    const totalLinks = links.length;
-    const avgClicks = totalLinks > 0 ? Math.round(totalClicks / totalLinks) : 0;
+    const totalClicks = data.reduce((acc, curr) => acc + curr.totalClicks, 0);
+    const totalLinks = data.length;
+    const avgClicks = totalLinks > 0 ? (totalClicks / totalLinks).toFixed(1) : 0;
 
-    // Device Distribution
-    const deviceCounts: Record<string, number> = {};
-    links.forEach((link) => {
-      const device = link.analyticsSummary.topDeviceType || "Unknown";
-      deviceCounts[device] = (deviceCounts[device] || 0) + 1;
+    // Device Distribution Aggregation
+    let mobile = 0, desktop = 0, tablet = 0, unknown = 0;
+    data.forEach(item => {
+        mobile += item.deviceStats.mobile;
+        desktop += item.deviceStats.desktop;
+        tablet += item.deviceStats.tablet;
+        unknown += item.deviceStats.unknown;
     });
-    const deviceData = Object.entries(deviceCounts).map(([name, value]) => ({
-      name,
-      value,
-    }));
+
+    const deviceData = [
+        { name: "Desktop", value: desktop },
+        { name: "Mobile", value: mobile },
+        { name: "Tablet", value: tablet },
+        { name: "Other", value: unknown }
+    ].filter(d => d.value > 0);
 
     // Top Links for Bar Chart
-    const topLinks = [...links]
-      .sort((a, b) => b.clickCount - a.clickCount)
+    const topLinks = [...data]
+      .sort((a, b) => b.totalClicks - a.totalClicks)
       .slice(0, 5)
       .map((link) => ({
-        name: link.shortCode,
-        clicks: link.clickCount,
+        name: link.code,
+        clicks: link.totalClicks,
         url: link.originalUrl,
       }));
       
     // Find absolute top country
     const countryCounts: Record<string, number> = {};
-    links.forEach((link) => {
-        if(link.analyticsSummary.topCountry) {
-            countryCounts[link.analyticsSummary.topCountry] = (countryCounts[link.analyticsSummary.topCountry] || 0) + 1;
-        }
+    data.forEach((item) => {
+        item.topCountries.forEach((c) => {
+            countryCounts[c.country] = (countryCounts[c.country] || 0) + c.clicks;
+        });
     });
     const topCountryEntry = Object.entries(countryCounts).sort((a,b) => b[1] - a[1])[0];
     const topGlobalCountry = topCountryEntry ? topCountryEntry[0] : "N/A";
 
     return { totalClicks, totalLinks, avgClicks, deviceData, topLinks, topGlobalCountry };
-  }, [links]);
+  }, [data]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -323,77 +318,6 @@ export default function AnalyticsPage() {
                </div>
             </Card>
           </div>
-
-          {/* Detailed Links Table */}
-          <Card className="glass-card p-6 rounded-2xl border-primary/10 overflow-hidden">
-             <div className="flex items-center justify-between mb-6">
-                 <h3 className="font-semibold text-lg flex items-center gap-2">
-                   <Link2 className="w-5 h-5 text-green-500" />
-                   Detailed Performance
-                 </h3>
-             </div>
-             <div className="overflow-x-auto">
-               <table className="w-full text-sm text-left">
-                 <thead className="bg-muted/50 text-muted-foreground font-medium uppercase text-xs">
-                   <tr>
-                     <th className="px-4 py-3 rounded-l-lg">Link</th>
-                     <th className="px-4 py-3">Created</th>
-                     <th className="px-4 py-3 text-center">Top Device</th>
-                     <th className="px-4 py-3 text-center">Top Region</th>
-                     <th className="px-4 py-3 text-right rounded-r-lg">Total Clicks</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-border/40">
-                   {links.map((link) => (
-                     <tr key={link.id} className="hover:bg-muted/30 transition-colors group">
-                       <td className="px-4 py-3">
-                         <div className="flex flex-col">
-                           <a href={link.shortUrl} target="_blank" className="font-medium text-primary hover:underline block truncate max-w-[200px]">
-                             {link.shortCode}
-                           </a>
-                           <span className="text-muted-foreground text-xs truncate max-w-[250px]">{link.originalUrl}</span>
-                         </div>
-                       </td>
-                       <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                         <div className="flex items-center gap-2">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(link.createdAt).toLocaleDateString()}
-                         </div>
-                       </td>
-                       <td className="px-4 py-3 text-center">
-                         {link.analyticsSummary.topDeviceType ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500">
-                                {link.analyticsSummary.topDeviceType}
-                            </span>
-                         ) : (
-                             <span className="text-muted-foreground">-</span>
-                         )}
-                       </td>
-                       <td className="px-4 py-3 text-center">
-                          {link.analyticsSummary.topCountry ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-500">
-                                {link.analyticsSummary.topCountry}
-                            </span>
-                         ) : (
-                             <span className="text-muted-foreground">-</span>
-                         )}
-                       </td>
-                       <td className="px-4 py-3 text-right font-bold">
-                         {link.clickCount}
-                       </td>
-                     </tr>
-                   ))}
-                   {links.length === 0 && !isLoading && (
-                     <tr>
-                       <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                         No links available to track.
-                       </td>
-                     </tr>
-                   )}
-                 </tbody>
-               </table>
-             </div>
-          </Card>
         </div>
       </main>
     </div>
