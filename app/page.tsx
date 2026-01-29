@@ -64,8 +64,6 @@ export default function Home() {
               createdAt: link.createdAt,
               title: link.title,
             }))
-            .reverse()
-            .slice(0, 5)
         );
       }
     } catch (error) {
