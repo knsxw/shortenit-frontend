@@ -268,24 +268,27 @@ export default function Home() {
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <a 
-                            href={link.shortUrl || `${window.location.origin}/s/${link.shortCode}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-lg font-bold text-primary hover:underline hover:text-primary/80 truncate"
-                          >
-                             {link.shortUrl ? link.shortUrl.replace(/^https?:\/\//, "") : `shortenit.freaks.dev/s/${link.shortCode}`}
-                          </a>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
-                            Active
+                        <div className="flex flex-col gap-1 mb-1">
+                          <span className="font-semibold text-foreground truncate max-w-[90%]">
+                              {link.title || "Untitled Link"}
+                          </span>
+                          <div className="flex items-center gap-2">
+                             <a 
+                               href={link.shortUrl || `${window.location.origin}/s/${link.shortCode}`}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="font-mono text-sm font-bold text-primary hover:underline hover:text-primary/80 truncate"
+                             >
+                                {link.shortUrl ? link.shortUrl.replace(/^https?:\/\//, "") : `shortenit.freaks.dev/s/${link.shortCode}`}
+                             </a>
+                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary text-secondary-foreground">
+                               Active
+                             </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground truncate max-w-[90%] opacity-75">
+                             {link.longUrl}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate max-w-[90%]">
-                          {link.title ? (
-                            <span className="font-medium text-foreground">{link.title} <span className="text-muted-foreground font-normal opacity-50">• {link.longUrl}</span></span>
-                          ) : link.longUrl}
-                        </p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -300,7 +303,7 @@ export default function Home() {
                         >
                           {copiedId === (link.id || link.shortCode) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </Button>
-                         <Link href={`/links`}>
+                         <Link href={`/analytics/${link.shortCode}`}>
                             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
                                <BarChart3 className="w-4 h-4" />
                             </Button>
