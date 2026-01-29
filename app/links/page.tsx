@@ -361,60 +361,63 @@ export default function LinksPage() {
           ) : (
              <div className="grid gap-4">
                 {displayedUrls.map((url) => (
-                    <Card key={url.shortCode} className="p-4 transition-colors hover:bg-accent/5">
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div className="space-y-1 min-w-0 w-full">
-                                <div className="flex items-center gap-3">
+                    <Card key={url.shortCode} className="group relative p-4 transition-all duration-300 hover:border-primary/50 shadow-sm hover:shadow-md">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
                                     <a
                                         href={url.shortUrl}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="font-bold text-primary hover:underline truncate"
+                                        className="font-mono text-lg font-bold text-primary hover:underline hover:text-primary/80 truncate"
                                     >
                                         {url.shortUrl.replace(/^https?:\/\//, '')}
                                     </a>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-6 w-6"
+                                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
                                         onClick={() => copyToClipboard(url.shortUrl, url.shortCode)}
                                     >
                                         {copiedUrlId === url.shortCode ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                                     </Button>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
+                                        Active
+                                    </span>
                                 </div>
-                                <p className="text-sm text-muted-foreground truncate max-w-lg">
-                                    {url.originalUrl}
+                                
+                                <p className="text-sm text-muted-foreground truncate max-w-lg mb-1">
+                                    {url.title ? (
+                                        <span className="font-medium text-foreground">{url.title} <span className="text-muted-foreground font-normal opacity-50">• {url.originalUrl}</span></span>
+                                    ) : url.originalUrl}
                                 </p>
-                                <div className="text-xs text-muted-foreground">
-                                    {new Date(url.createdAt).toLocaleDateString()}
+                                
+                                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                     <span>{new Date(url.createdAt).toLocaleDateString()}</span>
+                                     <span>•</span>
+                                     <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3" /> {url.clickCount} clicks</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0">
-                                <div className="text-center min-w-[60px]">
-                                    <div className="text-xl font-bold">{url.clickCount}</div>
-                                    <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Clicks</div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Link href={`/qrcodes?code=${url.shortCode}`}>
-                                        <Button variant="outline" size="icon">
-                                            <QrCode className="w-4 h-4" />
-                                        </Button>
-                                    </Link>
-                                    <Link href={`/analytics/${url.shortCode}`}>
-                                        <Button variant="outline" size="icon">
-                                            <BarChart2 className="w-4 h-4" />
-                                        </Button>
-                                    </Link>
-                                    <Button 
-                                        variant="outline" 
-                                        size="icon"
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        onClick={() => setDeleteId(url.shortCode)}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
+                            <div className="flex items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0">
+                                <Link href={`/qrcodes?code=${url.shortCode}`}>
+                                    <Button variant="outline" size="icon" className="h-9 w-9">
+                                        <QrCode className="w-4 h-4" />
                                     </Button>
-                                </div>
+                                </Link>
+                                <Link href={`/analytics/${url.shortCode}`}>
+                                    <Button variant="outline" size="icon" className="h-9 w-9">
+                                        <BarChart2 className="w-4 h-4" />
+                                    </Button>
+                                </Link>
+                                <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => setDeleteId(url.shortCode)}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
                             </div>
                         </div>
                     </Card>
