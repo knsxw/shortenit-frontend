@@ -34,9 +34,17 @@ export default function TopHeader() {
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-3 p-1.5 pr-3 hover:bg-muted/50 rounded-full border border-transparent hover:border-border transition-all duration-200 group"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:shadow-md transition-shadow">
-              {userInitial}
-            </div>
+            {user.image ? (
+              <img 
+                src={user.image} 
+                alt={user.name} 
+                className="w-8 h-8 rounded-full object-cover shadow-sm group-hover:shadow-md transition-shadow"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:shadow-md transition-shadow">
+                {userInitial}
+              </div>
+            )}
             <div className="flex flex-col items-start leading-none gap-0.5">
                 <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                 {user.name}
