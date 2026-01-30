@@ -9,32 +9,43 @@ export async function POST(request: Request) {
     }
 
     // Attempt to fetch the URL to validate it and get the title
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    let controller: AbortController;
+    let timeoutId: NodeJS.Timeout | undefined;
 
     try {
+       controller = new AbortController();
+       timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
       const response = await fetch(url, { 
         signal: controller.signal,
         headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; ShortenIt/1.0; +http://shortenit.freaks.dev)'
+            // Emulate a real browser to avoid "Just a moment" Cloudflare checks
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5"
         }
       });
       clearTimeout(timeoutId);
 
       if (response.status !== 403 && !response.ok) {
-        // We consider non-2xx as "valid" in terms of existing, but maybe not fetchable content.
-        // But user asked "when the page is invalid show error".
-        // Let's stricter:
         return NextResponse.json({ valid: false, message: `URL returned status ${response.status}` }, { status: 400 });
       }
 
       const html = await response.text();
+      let title = "";
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-      const title = titleMatch ? titleMatch[1].trim() : "";
+      
+      if (titleMatch && titleMatch[1]) {
+        const rawTitle = titleMatch[1].trim();
+        // Filter out common "bot protection" or "loading" titles
+        if (!/^(Just a moment|Access denied|Security Check|Attention Required|Loading|Please wait)/i.test(rawTitle)) {
+             title = rawTitle;
+        }
+      }
 
       return NextResponse.json({ valid: true, title });
     } catch (error) {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       return NextResponse.json({ valid: false, message: "Could not reach the URL. Please check if it works." }, { status: 400 });
     }
 
