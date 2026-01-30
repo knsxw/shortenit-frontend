@@ -112,7 +112,7 @@ export default function LinksPage() {
           createdAt: link.createdAt,
           customAlias: link.customAlias,
           title: link.title,
-        })).reverse();
+        }));
         setUrls(mappedUrls);
       }
     } catch (error) {
