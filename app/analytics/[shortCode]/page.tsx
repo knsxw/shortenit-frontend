@@ -1,50 +1,67 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, MousePointer2, Link as LinkIcon, Monitor, Globe, Smartphone, Chrome, Clock } from "lucide-react";
+import { ArrowLeft, MousePointer2, Link as LinkIcon, Monitor, Globe, Smartphone, Chrome, Clock, Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { 
+    PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area 
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TopHeader from "@/components/top-header";
 
 interface AnalyticsData {
     shortCode: string;
     originalUrl: string;
     totalClicks: number;
-    clicksByCountry: Array<{ country: string; count: number }>;
-    clicksByDevice: Array<{ device: string; count: number }>;
-    clicksByBrowser: Array<{ browser: string; count: number }>;
+    clicksByCountry: Array<{ country: string; count: number; percentage: number }>;
+    clicksByCity: Array<{ city: string; country: string; count: number; percentage: number }>;
+    clicksByDevice: Array<{ device: string; count: number; percentage?: number }>;
+    clicksByBrowser: Array<{ browser: string; count: number; percentage: number }>;
+    clicksByDate: Array<{ date: string; count: number }>;
+    clicksByHour: Array<{ hour: string; count: number }>;
     recentClicks: Array<{
         country: string;
         city: string;
         device: string;
         browser: string;
-        os?: string; // API doesn't seem to return OS in recentClicks? Double checking... example JSON doesn't show OS in recentClicks, wait, it says "deviceType", "browser". "os" missing in example.
+        os?: string;
         clickedAt: string;
+        referrer: string | null;
     }>;
 }
 
-// Temporary interface for API response to map from
+// Interface matching the new API response structure
 interface ApiResponse {
-    shortCode: string;
+    code: string;
     originalUrl: string;
     totalClicks: number;
+    createdAt: string;
+    clicksByDate: Record<string, number>;
+    clicksByHour: Record<string, number>;
+    topCountries: Array<{ country: string; clicks: number; percentage: number }>;
+    topCities: Array<{ city: string; country: string; clicks: number; percentage: number }>;
     deviceStats: {
         mobile: number;
         desktop: number;
         tablet: number;
         unknown: number;
+        mobilePercentage: number;
+        desktopPercentage: number;
+        tabletPercentage: number;
     };
-    topBrowsers: Array<{ browser: string; clicks: number }>;
-    topCountries: Array<{ country: string; clicks: number }>;
+    topBrowsers: Array<{ browser: string; clicks: number; percentage: number }>;
+    topReferrers: Array<any>;
     recentClicks: Array<{
+        timestamp: string;
         country: string;
         city: string;
         deviceType: string;
         browser: string;
-        timestamp: string;
+        referrer: string | null;
     }>;
 }
 
@@ -65,8 +82,6 @@ export default function LinkAnalytics() {
     const fetchAnalytics = async (code: string) => {
         try {
             const token = localStorage.getItem("auth-token");
-            // Note: The backend endpoint might be /api/urls/{code}/analytics or similar.
-            // Adjusting to match probable backend structure based on previous interactions.
             const response = await fetch(`${(process.env.NEXT_PUBLIC_API_BASE_URL === "undefined" ? "" : process.env.NEXT_PUBLIC_API_BASE_URL) || ""}/api/analytics/${code}`, {
                 headers: {
                     "Authorization": token ? `Bearer ${token}` : ""
@@ -78,28 +93,50 @@ export default function LinkAnalytics() {
                 throw new Error("Failed to fetch analytics");
             }
 
-            const data = await response.json();
+            const data: ApiResponse = await response.json();
             
             // Map API response to Component State Interface
             const mappedData: AnalyticsData = {
-                shortCode: data.shortCode,
+                shortCode: data.code,
                 originalUrl: data.originalUrl,
                 totalClicks: data.totalClicks,
-                clicksByCountry: data.topCountries?.map((c: any) => ({ country: c.country, count: c.clicks })) || [],
+                clicksByCountry: data.topCountries?.map(c => ({ 
+                    country: c.country, 
+                    count: c.clicks,
+                    percentage: c.percentage 
+                })) || [],
+                clicksByCity: data.topCities?.map(c => ({
+                    city: c.city,
+                    country: c.country,
+                    count: c.clicks,
+                    percentage: c.percentage
+                })) || [],
                 clicksByDevice: [
-                    { device: 'Mobile', count: data.deviceStats?.mobile || 0 },
-                    { device: 'Desktop', count: data.deviceStats?.desktop || 0 },
-                    { device: 'Tablet', count: data.deviceStats?.tablet || 0 },
-                    { device: 'Unknown', count: data.deviceStats?.unknown || 0 },
+                    { device: 'Mobile', count: data.deviceStats?.mobile || 0, percentage: data.deviceStats?.mobilePercentage },
+                    { device: 'Desktop', count: data.deviceStats?.desktop || 0, percentage: data.deviceStats?.desktopPercentage },
+                    { device: 'Tablet', count: data.deviceStats?.tablet || 0, percentage: data.deviceStats?.tabletPercentage },
+                    { device: 'Unknown', count: data.deviceStats?.unknown || 0, percentage: 0 },
                 ].filter(d => d.count > 0),
-                clicksByBrowser: data.topBrowsers?.map((b: any) => ({ browser: b.browser, count: b.clicks })) || [],
-                recentClicks: data.recentClicks?.map((rc: any) => ({
+                clicksByBrowser: data.topBrowsers?.map(b => ({ 
+                    browser: b.browser, 
+                    count: b.clicks,
+                    percentage: b.percentage 
+                })) || [],
+                clicksByDate: Object.entries(data.clicksByDate || {}).map(([date, count]) => ({
+                    date,
+                    count
+                })).sort((a, b) => a.date.localeCompare(b.date)),
+                clicksByHour: Object.entries(data.clicksByHour || {}).map(([hour, count]) => ({
+                    hour: `${hour}:00`,
+                    count
+                })).sort((a, b) => parseInt(a.hour) - parseInt(b.hour)),
+                recentClicks: data.recentClicks?.map(rc => ({
                     country: rc.country,
                     city: rc.city,
                     device: rc.deviceType,
                     browser: rc.browser,
                     clickedAt: rc.timestamp,
-                    os: "Unknown" // OS not provided in recentClicks example
+                    referrer: rc.referrer
                 })) || []
             };
 
@@ -200,6 +237,80 @@ export default function LinkAnalytics() {
                         </Card>
                     </div>
 
+                    {/* Click Trends Chart */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Calendar className="w-5 h-5" />
+                                Click Trends
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Tabs defaultValue="date" className="w-full">
+                                <TabsList className="mb-4">
+                                    <TabsTrigger value="date">By Date</TabsTrigger>
+                                    <TabsTrigger value="hour">By Hour</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="date" className="h-[300px]">
+                                    {analytics.clicksByDate.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={analytics.clicksByDate}>
+                                                <defs>
+                                                    <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
+                                                <XAxis 
+                                                    dataKey="date" 
+                                                    tick={{ fontSize: 12 }} 
+                                                    tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                />
+                                                <YAxis allowDecimals={false} />
+                                                <Tooltip 
+                                                    contentStyle={{ 
+                                                        backgroundColor: 'hsl(var(--popover))', 
+                                                        borderColor: 'hsl(var(--border))',
+                                                        borderRadius: 'var(--radius)',
+                                                        color: 'hsl(var(--popover-foreground))'
+                                                    }}
+                                                    labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                                                />
+                                                <Area type="monotone" dataKey="count" stroke="#3b82f6" fillOpacity={1} fill="url(#colorClicks)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center text-muted-foreground">No data available</div>
+                                    )}
+                                </TabsContent>
+                                <TabsContent value="hour" className="h-[300px]">
+                                    {analytics.clicksByHour.length > 0 ? (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={analytics.clicksByHour}>
+                                                <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
+                                                <XAxis dataKey="hour" tick={{ fontSize: 12 }} />
+                                                <YAxis allowDecimals={false} />
+                                                <Tooltip 
+                                                    cursor={{ fill: 'transparent' }}
+                                                    contentStyle={{ 
+                                                        backgroundColor: 'hsl(var(--popover))', 
+                                                        borderColor: 'hsl(var(--border))',
+                                                        borderRadius: 'var(--radius)',
+                                                        color: 'hsl(var(--popover-foreground))'
+                                                    }}
+                                                />
+                                                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    ) : (
+                                        <div className="h-full flex items-center justify-center text-muted-foreground">No data available</div>
+                                    )}
+                                </TabsContent>
+                            </Tabs>
+                        </CardContent>
+                    </Card>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <Card>
                             <CardHeader>
@@ -220,7 +331,7 @@ export default function LinkAnalytics() {
                                                     cx="50%"
                                                     cy="50%"
                                                     outerRadius={80}
-                                                    label={({ percent }: { percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                                                    label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                                                 >
                                                     {analytics.clicksByDevice.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -257,7 +368,7 @@ export default function LinkAnalytics() {
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={analytics.clicksByBrowser} layout="vertical">
                                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.3} />
-                                                <XAxis type="number" />
+                                                <XAxis type="number" allowDecimals={false} />
                                                 <YAxis dataKey="browser" type="category" width={100} tick={{ fontSize: 12 }} />
                                                 <Tooltip 
                                                     cursor={{ fill: 'transparent' }}
@@ -279,6 +390,37 @@ export default function LinkAnalytics() {
                         </Card>
                     </div>
 
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <MapPin className="w-5 h-5" />
+                                    Top Locations
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {analytics.clicksByCity.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {analytics.clicksByCity.slice(0, 5).map((city, index) => (
+                                            <div key={index} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                                    <span className="font-medium">{city.city}, {city.country}</span>
+                                                </div>
+                                                <div className="flex items-center gap-4 text-sm">
+                                                    <span className="text-muted-foreground">{city.count} clicks</span>
+                                                    <span className="font-mono">{city.percentage.toFixed(1)}%</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="h-32 flex items-center justify-center text-muted-foreground">No location data available</div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
@@ -296,8 +438,7 @@ export default function LinkAnalytics() {
                                                 <th className="font-medium py-3 pr-4">Location</th>
                                                 <th className="font-medium py-3 pr-4">Device</th>
                                                 <th className="font-medium py-3 pr-4">Browser</th>
-                                                <th className="font-medium py-3 pr-4">OS</th>
-                                                <th className="font-medium py-3">Time</th>
+                                                <th className="font-medium py-3 pr-4">Time</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
@@ -311,7 +452,6 @@ export default function LinkAnalytics() {
                                                     </td>
                                                     <td className="py-3 pr-4">{click.device}</td>
                                                     <td className="py-3 pr-4">{click.browser}</td>
-                                                    <td className="py-3 pr-4">{click.os || '-'}</td>
                                                     <td className="py-3 text-muted-foreground whitespace-nowrap">
                                                         {new Date(click.clickedAt).toLocaleString()}
                                                     </td>
