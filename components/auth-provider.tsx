@@ -8,6 +8,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  image?: string | null;
 }
 
 interface AuthContextType {
@@ -46,6 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (response.ok) {
           const userData = await response.json();
+          // Check for locally cached image
+          const localImage = localStorage.getItem("user_profile_image");
+          if (!userData.image && localImage) {
+            userData.image = localImage;
+          }
           setUser(userData);
           // Optional: Update localStorage if you still use it for other things
           localStorage.setItem("auth-user", JSON.stringify(userData));
@@ -77,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem("auth-user");
     localStorage.removeItem("auth-token");
+    localStorage.removeItem("user_profile_image");
     setUser(null);
     // Call API logout if exists
     // fetch('/api/auth/logout', { method: 'POST' });
