@@ -154,7 +154,7 @@ export default function LinksPage() {
         },
         body: JSON.stringify({
           originalUrl: newUrl,
-          customAlias: customAlias || undefined,
+          code: customAlias || undefined,
           title: newUrlTitle || fetchedTitle || undefined,
         }),
       });
