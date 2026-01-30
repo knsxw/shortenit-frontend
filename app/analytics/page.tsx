@@ -352,7 +352,7 @@ export default function AnalyticsPage() {
                <div className="flex items-center justify-between mb-6">
                  <h3 className="font-semibold text-lg flex items-center gap-2">
                    <ArrowUpRight className="w-5 h-5 text-green-500" />
-                   Hourly Activity (UTC)
+                   Hourly Activity
                  </h3>
                </div>
                <div className="h-[250px] w-full">

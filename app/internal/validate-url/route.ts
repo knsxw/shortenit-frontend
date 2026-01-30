@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       });
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
+      if (response.status !== 403 && !response.ok) {
         // We consider non-2xx as "valid" in terms of existing, but maybe not fetchable content.
         // But user asked "when the page is invalid show error".
         // Let's stricter:
