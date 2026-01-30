@@ -16,7 +16,7 @@ interface Url {
   clickCount: number;
   createdAt: string;
   customAlias?: string;
-  title?: string;
+  title: string;
 }
 
 export default function LinksPage() {
@@ -77,6 +77,7 @@ export default function LinksPage() {
       const lowerQuery = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(
         (u) =>
+          u.title.toLowerCase().includes(lowerQuery) ||
           u.originalUrl.toLowerCase().includes(lowerQuery) ||
           u.shortCode.toLowerCase().includes(lowerQuery) ||
           (u.customAlias && u.customAlias.toLowerCase().includes(lowerQuery))
