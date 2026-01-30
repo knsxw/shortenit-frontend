@@ -3,7 +3,6 @@
 import { useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
-import { fetchMicrosoftProfileImage } from "@/lib/microsoft";
 
 function CallbackContent() {
   const router = useRouter();
@@ -26,31 +25,19 @@ function CallbackContent() {
 
     if (accessToken && userEmail) {
       processedRef.current = true;
-      
-      const handleLogin = async () => {
-        let imageUrl = null;
-        try {
-            imageUrl = await fetchMicrosoftProfileImage(accessToken);
-            if (imageUrl) {
-                localStorage.setItem("user_profile_image", imageUrl);
-            }
-        } catch (e) {
-            console.error("BG fetch image failed", e);
-        }
-
-        const tempUser = {
-            id: 0, // Temporary ID
-            name: userEmail.split("@")[0], // Temporary Name
-            email: userEmail,
-            role: "USER",
-            image: imageUrl
-        };
-
-        login(tempUser, accessToken);
-        window.location.href = "/";
+      // Construct a temporary user object.
+      // We will fetch the full profile from /api/auth/me immediately after.
+      const tempUser = {
+        id: 0, // Temporary ID
+        name: userEmail.split("@")[0], // Temporary Name
+        email: userEmail,
+        role: "USER"
       };
 
-      handleLogin();
+      login(tempUser, accessToken);
+      // Login function redirects to /, but we rely on AuthProvider to check /api/auth/me
+      // Force redirect just in case
+      window.location.href = "/";
     } else if (!accessToken) {
         // Only error if we really don't have tokens and we haven't processed yet
          console.error("Missing tokens in callback URL");
