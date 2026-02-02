@@ -17,6 +17,7 @@ interface Url {
   createdAt: string;
   customAlias?: string;
   title: string;
+  isActive: boolean;
 }
 
 export default function LinksPage() {
@@ -114,6 +115,7 @@ export default function LinksPage() {
           createdAt: link.createdAt,
           customAlias: link.customAlias,
           title: link.title,
+          isActive: link.isActive !== undefined ? link.isActive : true,
         }));
         setUrls(mappedUrls);
       }
@@ -390,8 +392,8 @@ export default function LinksPage() {
                                         >
                                             {copiedUrlId === url.shortCode ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                                         </Button>
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-secondary text-secondary-foreground">
-                                            Active
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${url.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                            {url.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </div>
                                     <span className="text-xs text-muted-foreground truncate max-w-lg opacity-75">

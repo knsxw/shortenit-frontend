@@ -432,12 +432,9 @@ export default function LinkDetailPage() {
                 </Card>
 
                 <Card className="border-none shadow-md overflow-hidden">
-                    <CardHeader className="bg-muted/50 border-b pb-4">
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <div className="p-1.5 bg-background rounded-md shadow-sm">
-                                <ExternalLink className="w-4 h-4" />
-                            </div>
-                            Link Metadata
+                    <CardHeader className="flex flex-row items-center border-b bg-muted/50 px-6 py-4">
+                        <CardTitle className="text-base font-medium">
+                          Link Metadata
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
