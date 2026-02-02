@@ -217,134 +217,188 @@ export default function LinkDetailPage() {
   return (
     <div className="flex flex-col h-screen bg-background font-sans">
       <TopHeader />
-      <div className="flex-1 overflow-auto p-4 md:p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center gap-4 mb-2">
-            <Link href="/links">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Link Details</h1>
-              <p className="text-sm text-muted-foreground">Manage and edit your short link</p>
+      <div className="flex-1 overflow-auto bg-muted/30">
+        <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
+          
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <Link href="/links" className="hover:text-foreground transition-colors flex items-center gap-1">
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Links
+                </Link>
+                <span>/</span>
+                <span>Details</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {/* Displaying Short URL as requested */}
+                {link.shortUrl.replace(/^https?:\/\//, '')}
+              </h1>
+              <p className="text-muted-foreground break-all max-w-2xl">{link.originalUrl}</p>
+            </div>
+            <div className="flex items-center gap-3">
+               <Button 
+                 variant="outline" 
+                 onClick={handleCopy}
+                 className="shadow-sm"
+               >
+                  {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
+                  {copied ? "Copied" : "Copy"}
+               </Button>
+               <Link href={`/analytics/${shortCodeParam}`}>
+                  <Button variant="outline" className="shadow-sm">
+                      <MousePointer2 className="w-4 h-4 mr-2" />
+                      Analytics
+                  </Button>
+               </Link>
+               <Button 
+                  variant="destructive" 
+                  size="icon"
+                  className="shadow-sm"
+                  onClick={handleDelete}
+               >
+                  <Trash2 className="w-4 h-4" />
+               </Button>
             </div>
           </div>
 
           {successMessage && (
-            <div className="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center gap-2 dark:bg-green-900/30 dark:border-green-800 dark:text-green-300">
-               <Check className="w-4 h-4" />
+            <div className="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm dark:bg-green-900/30 dark:border-green-800 dark:text-green-300">
+               <div className="p-1 bg-green-200 dark:bg-green-800 rounded-full">
+                  <Check className="w-3 h-3" />
+               </div>
                {successMessage}
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Edit Form */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Config Column */}
             <div className="lg:col-span-2 space-y-6">
-              <Card>
+              <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle>Configuration</CardTitle>
-                  <CardDescription>Update basic settings for your link.</CardDescription>
+                  <div className="flex items-center gap-2">
+                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                        <ExternalLink className="w-5 h-5" />
+                     </div>
+                     <div>
+                        <CardTitle>Link Configuration</CardTitle>
+                        <CardDescription>Manage settings for your short link</CardDescription>
+                     </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSave} className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Title</label>
-                      <Input 
-                        value={title} 
-                        onChange={(e) => setTitle(e.target.value)} 
-                        placeholder="Link Title"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Original URL</label>
-                      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-md border text-muted-foreground text-sm break-all">
-                        <ExternalLink className="w-4 h-4 shrink-0" />
-                        {link.originalUrl}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Short Code (Alias)</label>
-                      <div className="flex gap-2">
-                         <div className="flex items-center px-3 bg-muted border border-r-0 rounded-l-md text-muted-foreground text-sm">
-                            {new URL(link.shortUrl).origin}/s/
-                         </div>
-                         <Input 
-                           value={code} 
-                           onChange={(e) => setCode(e.target.value)} 
-                           className="rounded-l-none"
-                         />
-                      </div>
-                      <p className="text-xs text-muted-foreground">Changing this will invalidate the old short link.</p>
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <label className="text-sm font-medium">Status</label>
-                            <p className="text-xs text-muted-foreground">Enable or disable this link.</p>
+                  <form onSubmit={handleSave} className="space-y-6">
+                    <div className="grid gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                              Display Title
+                          </label>
+                          <Input 
+                            value={title} 
+                            onChange={(e) => setTitle(e.target.value)} 
+                            placeholder="e.g. My Awesome Portfolio"
+                            className="bg-background/50 h-11"
+                          />
                         </div>
-                        <Button 
-                            type="button" 
-                            variant={isActive ? "default" : "secondary"}
-                            onClick={() => setIsActive(!isActive)}
-                            className={isActive ? "bg-green-600 hover:bg-green-700" : ""}
-                        >
-                            {isActive ? "Active" : "Inactive"}
-                        </Button>
-                    </div>
-
-                    <Separator className="my-4" />
-                    
-                    <div className="space-y-4">
-                         <div>
-                            <label className="text-sm font-medium mb-1 block">Expiration</label>
-                            {link.expiresAt ? (
-                                <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 mb-2">
-                                    <Clock className="w-4 h-4" />
-                                    Expires on: {new Date(link.expiresAt).toLocaleString()}
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                    <Clock className="w-4 h-4" />
-                                    No expiration set (Never expires)
-                                </div>
-                            )}
-                         </div>
-
-                         <div className="flex flex-col gap-2 p-4 bg-muted/30 rounded-lg border">
-                             <div className="flex items-center gap-2 mb-2">
-                                <input 
-                                    type="checkbox" 
-                                    id="clearExpected" 
-                                    checked={clearExpiration} 
-                                    onChange={(e) => setClearExpiration(e.target.checked)}
-                                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                                />
-                                <label htmlFor="clearExpected" className="text-sm font-medium">Remove expiration (Make permanent)</label>
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                              Short Code (Alias)
+                          </label>
+                          <div className="flex shadow-sm rounded-md">
+                             <div className="flex items-center px-4 bg-muted border border-r-0 rounded-l-md text-muted-foreground text-sm font-mono">
+                                {new URL(link.shortUrl).origin}/s/
                              </div>
-                             
-                             {!clearExpiration && (
-                                 <div className="flex items-center gap-2">
-                                     <Input
-                                        type="number"
-                                        min="1"
-                                        placeholder="Set expires in (days)"
-                                        value={expirationDays}
-                                        onChange={(e) => setExpirationDays(e.target.value)}
-                                        className="max-w-[180px]"
-                                     />
-                                     <span className="text-sm text-muted-foreground">days from now</span>
-                                 </div>
+                             <Input 
+                               value={code} 
+                               onChange={(e) => setCode(e.target.value)} 
+                               className="rounded-l-none bg-background/50 h-11 font-mono"
+                             />
+                          </div>
+                          <p className="text-[13px] text-muted-foreground">
+                              Customize how your link looks. Changing this will redirect you to the new URL.
+                          </p>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
+                        <div className="space-y-0.5">
+                            <label className="text-sm font-medium">Link Status</label>
+                            <p className="text-xs text-muted-foreground">
+                                {isActive ? "Link is accessible to everyone" : "Link redirects to 404 page"}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                {isActive ? "Active" : "Inactive"}
+                            </span>
+                            <Button 
+                                type="button" 
+                                variant={isActive ? "outline" : "default"}
+                                size="sm"
+                                onClick={() => setIsActive(!isActive)}
+                                className={!isActive ? "bg-green-600 hover:bg-green-700" : ""}
+                            >
+                                {isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                         <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-primary" />
+                            <h3 className="text-sm font-medium">Expiration Settings</h3>
+                         </div>
+                         
+                         <div className="p-5 bg-muted/30 rounded-xl border space-y-4">
+                             {link.expiresAt && !clearExpiration ? (
+                                <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md">
+                                    <AlertCircle className="w-4 h-4" />
+                                    <span>Expires on <strong>{new Date(link.expiresAt).toLocaleString()}</strong></span>
+                                </div>
+                             ) : (
+                                <div className="text-sm text-muted-foreground mb-2 pl-1">
+                                    Link currently has no expiration date.
+                                </div>
                              )}
+
+                             <div className="space-y-4 pt-2">
+                                 <div className="flex items-center gap-2">
+                                    <input 
+                                        type="checkbox" 
+                                        id="clearExpected" 
+                                        checked={clearExpiration} 
+                                        onChange={(e) => setClearExpiration(e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <label htmlFor="clearExpected" className="text-sm font-medium cursor-pointer select-none">
+                                        Make Permanent (Remove Expiration)
+                                    </label>
+                                 </div>
+                                 
+                                 {!clearExpiration && (
+                                     <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                                         <span className="text-sm">Expire in:</span>
+                                         <Input
+                                            type="number"
+                                            min="1"
+                                            placeholder="30"
+                                            value={expirationDays}
+                                            onChange={(e) => setExpirationDays(e.target.value)}
+                                            className="w-24 h-9"
+                                         />
+                                         <span className="text-sm text-muted-foreground">days</span>
+                                     </div>
+                                 )}
+                             </div>
                          </div>
                     </div>
 
-                    <div className="pt-4 flex justify-end">
-                       <Button type="submit" disabled={saving}>
+                    <div className="flex justify-end pt-2">
+                       <Button type="submit" disabled={saving} size="lg" className="min-w-[140px] shadow-md transition-all hover:scale-[1.02]">
                          {saving ? (
                             <>
                                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2"></div>
@@ -363,69 +417,60 @@ export default function LinkDetailPage() {
               </Card>
             </div>
 
-            {/* Sidebar Info */}
+            {/* Sidebar Stats Column */}
             <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Quick Actions</CardTitle>
+                <Card className="border-none shadow-md bg-gradient-to-br from-primary/5 to-transparent">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clicks</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                         <Button 
-                            variant="outline" 
-                            className="w-full justify-start"
-                            onClick={handleCopy}
-                         >
-                            {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
-                            {copied ? "Copied!" : "Copy Short Link"}
-                         </Button>
-                         <Link href={`/analytics/${shortCodeParam}`}>
-                            <Button variant="outline" className="w-full justify-start">
-                                <MousePointer2 className="w-4 h-4 mr-2" />
-                                View Analytics
-                            </Button>
-                         </Link>
-                         
-                         <Separator />
-                         
-                         <Button 
-                            variant="destructive" 
-                            className="w-full justify-start text-destructive-foreground"
-                            onClick={handleDelete}
-                            disabled={deleting}
-                         >
-                            {deleting ? "Deleting..." : (
-                                <>
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete Link
-                                </>
-                            )}
-                         </Button>
+                    <CardContent>
+                        <div className="text-4xl font-bold text-primary">{link.clickCount}</div>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <MousePointer2 className="w-3 h-3" /> All time interactions
+                        </p>
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">Metadata</CardTitle>
+                <Card className="border-none shadow-md overflow-hidden">
+                    <CardHeader className="bg-muted/50 border-b pb-4">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <div className="p-1.5 bg-background rounded-md shadow-sm">
+                                <ExternalLink className="w-4 h-4" />
+                            </div>
+                            Link Metadata
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="text-sm space-y-4">
-                        <div className="flex justify-between py-1 border-b border-border/50">
-                            <span className="text-muted-foreground">Created</span>
-                            <span className="font-medium">{new Date(link.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex justify-between py-1 border-b border-border/50">
-                            <span className="text-muted-foreground">Clicks</span>
-                            <span className="font-medium">{link.clickCount}</span>
-                        </div>
-                        <div className="flex justify-between py-1 border-b border-border/50">
-                            <span className="text-muted-foreground">Code Type</span>
-                            <span className="font-medium">{link.codeType}</span>
-                        </div>
-                        <div className="flex justify-between py-1">
-                            <span className="text-muted-foreground">Owner URL ID</span>
-                            <span className="font-medium">{link.id}</span>
+                    <CardContent className="p-0">
+                        <div className="divide-y">
+                            <div className="flex justify-between p-4 hover:bg-muted/20 transition-colors">
+                                <span className="text-sm text-muted-foreground flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" /> Created
+                                </span>
+                                <span className="text-sm font-medium">{new Date(link.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between p-4 hover:bg-muted/20 transition-colors">
+                                <span className="text-sm text-muted-foreground">Code Type</span>
+                                <span className="text-sm font-medium px-2 py-0.5 bg-secondary rounded-full text-[10px] uppercase">
+                                    {link.codeType}
+                                </span>
+                            </div>
+                            <div className="flex justify-between p-4 hover:bg-muted/20 transition-colors">
+                                <span className="text-sm text-muted-foreground">Link ID</span>
+                                <span className="text-sm font-mono text-muted-foreground">#{link.id}</span>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
+                
+                <div className="rounded-xl overflow-hidden shadow-lg border-4 border-white dark:border-zinc-800">
+                    {/* Placeholder map or graphical element could go here to add visual flair */}
+                    <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center p-6 text-white text-center">
+                        <div>
+                             <p className="font-bold text-lg mb-1">Boost Engagement</p>
+                             <p className="text-xs opacity-80">Share your link on social media</p>
+                        </div>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
