@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode } from "lucide-react";
+import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -406,6 +406,11 @@ export default function LinksPage() {
                                 <Link href={`/qrcodes?code=${url.shortCode}`}>
                                     <Button variant="outline" size="icon" className="h-9 w-9">
                                         <QrCode className="w-4 h-4" />
+                                    </Button>
+                                </Link>
+                                <Link href={`/links/${url.shortCode}`}>
+                                    <Button variant="outline" size="icon" className="h-9 w-9">
+                                        <Settings className="w-4 h-4" />
                                     </Button>
                                 </Link>
                                 <Link href={`/analytics/${url.shortCode}`}>
