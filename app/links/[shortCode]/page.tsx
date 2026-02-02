@@ -233,9 +233,9 @@ export default function LinkDetailPage() {
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 {/* Displaying Short URL as requested */}
-                {link.shortUrl.replace(/^https?:\/\//, '')}
+                {link.title}
               </h1>
-              <p className="text-muted-foreground break-all max-w-2xl">{link.originalUrl}</p>
+              <p className="text-muted-foreground break-all max-w-2xl">{link.shortUrl}</p>
             </div>
             <div className="flex items-center gap-3">
                <Button 
