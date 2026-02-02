@@ -307,7 +307,7 @@ export default function LinkDetailPage() {
                               Short Code (Alias)
                           </label>
                           <div className="flex shadow-sm rounded-md">
-                             <div className="flex items-center px-4 bg-muted border border-r-0 rounded-l-md text-muted-foreground text-sm font-mono">
+                             <div className="flex items-center px-4 bg-muted border border-r-0 rounded-l-md text-muted-foreground text-sm font-mono whitespace-nowrap">
                                 {new URL(link.shortUrl).origin}/s/
                              </div>
                              <Input 
@@ -461,16 +461,6 @@ export default function LinkDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <div className="rounded-xl overflow-hidden shadow-lg border-4 border-white dark:border-zinc-800">
-                    {/* Placeholder map or graphical element could go here to add visual flair */}
-                    <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center p-6 text-white text-center">
-                        <div>
-                             <p className="font-bold text-lg mb-1">Boost Engagement</p>
-                             <p className="text-xs opacity-80">Share your link on social media</p>
-                        </div>
-                    </div>
-                </div>
             </div>
           </div>
         </div>
