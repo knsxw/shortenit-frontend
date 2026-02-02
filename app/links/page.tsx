@@ -25,6 +25,7 @@ export default function LinksPage() {
   const [newUrl, setNewUrl] = useState("");
   const [newUrlTitle, setNewUrlTitle] = useState("");
   const [customAlias, setCustomAlias] = useState("");
+  const [expirationDays, setExpirationDays] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showBulk, setShowBulk] = useState(false);
   const [bulkUrls, setBulkUrls] = useState("");
@@ -156,6 +157,7 @@ export default function LinksPage() {
           originalUrl: newUrl,
           code: customAlias || undefined,
           title: newUrlTitle || fetchedTitle || undefined,
+          expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
         }),
       });
 
@@ -167,6 +169,7 @@ export default function LinksPage() {
       setNewUrl("");
       setNewUrlTitle("");
       setCustomAlias("");
+      setExpirationDays("");
       setShowAdvanced(false);
       fetchUrls(); // Refresh list
     } catch (error: any) {
@@ -324,12 +327,13 @@ export default function LinksPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Password Protection</label>
+                                    <label className="block text-sm font-medium mb-1">Expiration (Days)</label>
                                     <Input
-                                        type="password"
-                                        disabled
-                                        placeholder="Coming soon..."
-                                        className="opacity-50 cursor-not-allowed"
+                                        type="number"
+                                        min="1"
+                                        value={expirationDays}
+                                        onChange={(e) => setExpirationDays(e.target.value)}
+                                        placeholder="e.g. 7"
                                     />
                                 </div>
                             </div>
