@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import TopHeader from "@/components/top-header";
+
 
 import { api } from "@/lib/api";
 import { Url } from "@/lib/types";
@@ -187,9 +187,7 @@ export default function LinksPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background font-sans">
-      <TopHeader />
-      <div className="flex-1 overflow-auto p-4 md:p-8">
+    <div className="flex-1 overflow-auto p-4 md:p-8 bg-background font-sans">
         <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Links</h1>
@@ -499,6 +497,5 @@ export default function LinksPage() {
         </div>
       )}
       </div>
-    </div>
   );
 }

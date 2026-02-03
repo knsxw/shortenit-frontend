@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TopHeader from "@/components/top-header";
+
 
 import { api } from "@/lib/api";
 import { AnalyticsData as ApiAnalyticsResponse } from "@/lib/types";
@@ -114,36 +114,28 @@ export default function LinkAnalytics() {
 
     if (loading) {
         return (
-            <div className="flex flex-col h-screen bg-background">
-                <TopHeader />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
+            <div className="flex-1 flex items-center justify-center bg-background h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
         );
     }
 
     if (error || !analytics) {
         return (
-            <div className="flex flex-col h-screen bg-background">
-                <TopHeader />
-                <div className="flex-1 flex flex-col items-center justify-center p-4">
-                    <h1 className="text-2xl font-bold mb-4">{error || "Analytics not found"}</h1>
-                    <Link href="/analytics">
-                        <Button variant="outline">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Analytics
-                        </Button>
-                    </Link>
-                </div>
+            <div className="flex-1 flex flex-col items-center justify-center p-4 h-full bg-background">
+                <h1 className="text-2xl font-bold mb-4">{error || "Analytics not found"}</h1>
+                <Link href="/analytics">
+                    <Button variant="outline">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Analytics
+                    </Button>
+                </Link>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-screen bg-background">
-            <TopHeader />
-            <main className="flex-1 overflow-auto p-4 md:p-8">
+        <div className="flex-1 overflow-auto p-4 md:p-8 bg-background font-sans h-full">
                 <div className="max-w-6xl mx-auto space-y-8">
                     <div className="flex items-center justify-between">
                          <div className="flex items-center gap-4">
@@ -429,7 +421,6 @@ export default function LinkAnalytics() {
                         </CardContent>
                     </Card>
                 </div>
-            </main>
-        </div>
+            </div>
     );
 }

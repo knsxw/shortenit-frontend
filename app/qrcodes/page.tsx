@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import TopHeader from "@/components/top-header";
+
 
 interface Url {
   shortCode: string;
@@ -200,10 +200,8 @@ function QRCodesContent() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <TopHeader />
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-8">
+    <div className="flex-1 overflow-y-auto bg-background font-sans h-full">
+        <div className="p-6 md:p-8 space-y-8">
           <header>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Sparkles className="w-8 h-8" />
@@ -505,7 +503,6 @@ function QRCodesContent() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

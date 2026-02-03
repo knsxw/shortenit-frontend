@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import TopHeader from "@/components/top-header";
+
 
 import { api } from "@/lib/api";
 import { LinkDetails } from "@/lib/types";
@@ -134,10 +134,9 @@ export default function LinkDetailPage() {
   if (loading) {
     return (
       <div className="flex flex-col h-screen bg-background">
-        <TopHeader />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+        <div className="flex-1 flex items-center justify-center bg-background h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
       </div>
     );
   }
@@ -145,8 +144,7 @@ export default function LinkDetailPage() {
   if (error || !link) {
     return (
       <div className="flex flex-col h-screen bg-background">
-        <TopHeader />
-        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center bg-background h-full">
           <h1 className="text-2xl font-bold mb-4 text-destructive">Error</h1>
           <p className="text-muted-foreground mb-6">{error || "Link not found"}</p>
           <Link href="/links">
@@ -161,9 +159,7 @@ export default function LinkDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background font-sans">
-      <TopHeader />
-      <div className="flex-1 overflow-auto bg-muted/30">
+    <div className="flex-1 overflow-auto bg-muted/30 font-sans">
         <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
           
           {/* Header Section */}
@@ -407,7 +403,6 @@ export default function LinkDetailPage() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

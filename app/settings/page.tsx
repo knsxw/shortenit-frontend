@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import TopHeader from "@/components/top-header";
+
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -158,8 +158,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <TopHeader />
-      <main className="flex-1 overflow-auto bg-background p-8">
+      <main className="flex-1 overflow-auto bg-background p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <h1 className="text-3xl font-bold mb-8 text-foreground">Settings</h1>
 
