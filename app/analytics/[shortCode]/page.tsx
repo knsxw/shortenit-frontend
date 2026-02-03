@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TopHeader from "@/components/top-header";
 
-interface AnalyticsData {
+import { api } from "@/lib/api";
+import { AnalyticsData as ApiAnalyticsResponse } from "@/lib/types";
+
+interface AnalyticsViewState {
     shortCode: string;
     originalUrl: string;
     totalClicks: number;
@@ -35,41 +38,13 @@ interface AnalyticsData {
 }
 
 // Interface matching the new API response structure
-interface ApiResponse {
-    code: string;
-    originalUrl: string;
-    totalClicks: number;
-    createdAt: string;
-    clicksByDate: Record<string, number>;
-    clicksByHour: Record<string, number>;
-    topCountries: Array<{ country: string; clicks: number; percentage: number }>;
-    topCities: Array<{ city: string; country: string; clicks: number; percentage: number }>;
-    deviceStats: {
-        mobile: number;
-        desktop: number;
-        tablet: number;
-        unknown: number;
-        mobilePercentage: number;
-        desktopPercentage: number;
-        tabletPercentage: number;
-    };
-    topBrowsers: Array<{ browser: string; clicks: number; percentage: number }>;
-    topReferrers: Array<any>;
-    recentClicks: Array<{
-        timestamp: string;
-        country: string;
-        city: string;
-        deviceType: string;
-        browser: string;
-        referrer: string | null;
-    }>;
-}
+
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function LinkAnalytics() {
     const params = useParams();
-    const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+    const [analytics, setAnalytics] = useState<AnalyticsViewState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -81,22 +56,10 @@ export default function LinkAnalytics() {
 
     const fetchAnalytics = async (code: string) => {
         try {
-            const token = localStorage.getItem("auth-token");
-            const response = await fetch(`${(process.env.NEXT_PUBLIC_API_BASE_URL === "undefined" ? "" : process.env.NEXT_PUBLIC_API_BASE_URL) || ""}/api/analytics/${code}`, {
-                headers: {
-                    "Authorization": token ? `Bearer ${token}` : ""
-                }
-            });
-            
-            if (!response.ok) {
-                if (response.status === 404) throw new Error("Analytics not found");
-                throw new Error("Failed to fetch analytics");
-            }
-
-            const data: ApiResponse = await response.json();
+            const data = await api.analytics.get(code);
             
             // Map API response to Component State Interface
-            const mappedData: AnalyticsData = {
+            const mappedData: AnalyticsViewState = {
                 shortCode: data.code,
                 originalUrl: data.originalUrl,
                 totalClicks: data.totalClicks,

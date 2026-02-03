@@ -10,23 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import TopHeader from "@/components/top-header";
 
-interface LinkDetails {
-  id: number;
-  originalUrl: string;
-  code: string;
-  shortUrl: string;
-  title: string;
-  clickCount: number;
-  createdAt: string;
-  expiresAt: string | null;
-  isActive: boolean;
-  codeType: string;
-  owner: {
-    id: number;
-    name: string;
-    email: string;
-  };
-}
+import { api } from "@/lib/api";
+import { LinkDetails } from "@/lib/types";
 
 export default function LinkDetailPage() {
   const params = useParams();
@@ -59,19 +44,7 @@ export default function LinkDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem("auth-token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/${codeToFetch}`, {
-        headers: {
-          "Authorization": token ? `Bearer ${token}` : ""
-        }
-      });
-
-      if (!res.ok) {
-        if (res.status === 404) throw new Error("Link not found");
-        throw new Error("Failed to load link details");
-      }
-
-      const data: LinkDetails = await res.json();
+      const data = await api.links.getOne(codeToFetch);
       setLink(data);
       
       // Initialize form defaults
@@ -105,8 +78,6 @@ export default function LinkDetailPage() {
     setSuccessMessage(null);
 
     try {
-      const token = localStorage.getItem("auth-token");
-      
       const payload: any = {
         title,
         code, // shortCode
@@ -123,21 +94,7 @@ export default function LinkDetailPage() {
         }
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/${shortCodeParam}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : ""
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Failed to update link");
-      }
-
-      const updatedLink: LinkDetails = await res.json();
+      const updatedLink = await api.links.update(shortCodeParam, payload);
       
       setSuccessMessage("Link updated successfully!");
       setLink(updatedLink);
@@ -165,18 +122,7 @@ export default function LinkDetailPage() {
     
     setDeleting(true);
     try {
-      const token = localStorage.getItem("auth-token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/${shortCodeParam}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": token ? `Bearer ${token}` : ""
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete link");
-      }
-
+      await api.links.delete(shortCodeParam);
       router.push("/links");
     } catch (err: any) {
       console.error(err);

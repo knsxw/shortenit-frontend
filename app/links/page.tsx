@@ -8,17 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TopHeader from "@/components/top-header";
 
-interface Url {
-  id: string;
-  originalUrl: string;
-  shortCode: string;
-  shortUrl: string;
-  clickCount: number;
-  createdAt: string;
-  customAlias?: string;
-  title: string;
-  isActive: boolean;
-}
+import { api } from "@/lib/api";
+import { Url } from "@/lib/types";
 
 export default function LinksPage() {
   const [urls, setUrls] = useState<Url[]>([]);
@@ -96,29 +87,21 @@ export default function LinksPage() {
 
   const fetchUrls = async () => {
     setLoading(true);
-    const token = localStorage.getItem("auth-token");
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
-          headers: {
-            "Authorization": token ? `Bearer ${token}` : ""
-          }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const linksList = Array.isArray(data) ? data : (data?.content || data?.urls || []);
-        const mappedUrls = linksList.map((link: any) => ({
-          id: link.id,
-          originalUrl: link.originalUrl,
-          shortCode: link.code || link.shortCode,
-          shortUrl: link.shortUrl || `${window.location.origin}/s/${link.code || link.shortCode}`,
-          clickCount: link.clickCount || 0,
-          createdAt: link.createdAt,
-          customAlias: link.customAlias,
-          title: link.title,
-          isActive: link.isActive !== undefined ? link.isActive : true,
-        }));
-        setUrls(mappedUrls);
-      }
+      const data = await api.links.getAll();
+      const linksList = Array.isArray(data) ? data : ((data as any)?.content || (data as any)?.urls || []);
+      const mappedUrls = linksList.map((link: any) => ({
+        id: link.id,
+        originalUrl: link.originalUrl,
+        shortCode: link.code || link.shortCode,
+        shortUrl: link.shortUrl || `${window.location.origin}/s/${link.code || link.shortCode}`,
+        clickCount: link.clickCount || 0,
+        createdAt: link.createdAt,
+        customAlias: link.customAlias,
+        title: link.title,
+        isActive: link.isActive !== undefined ? link.isActive : true,
+      }));
+      setUrls(mappedUrls);
     } catch (error) {
       console.error("Failed to fetch URLs", error);
     } finally {
@@ -130,43 +113,19 @@ export default function LinksPage() {
     e.preventDefault();
     if (!newUrl) return;
 
-    const token = localStorage.getItem("auth-token");
     setLoading(true);
 
     try {
       // 1. Validate URL and fetch Title via internal API
-      const validationRes = await fetch("/internal/validate-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: newUrl }),
-      });
-
-      if (!validationRes.ok) {
-        const errorData = await validationRes.json();
-        throw new Error(errorData.message || "Invalid or unreachable URL");
-      }
-
-      const { title: fetchedTitle } = await validationRes.json();
+      const { title: fetchedTitle } = await api.links.validate(newUrl);
 
       // 2. Proceed to shorten with the fetched title
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": token ? `Bearer ${token}` : ""
-        },
-        body: JSON.stringify({
-          originalUrl: newUrl,
-          code: customAlias || undefined,
-          title: newUrlTitle || fetchedTitle || undefined,
-          expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
-        }),
+      await api.links.create({
+        originalUrl: newUrl,
+        code: customAlias || undefined,
+        title: newUrlTitle || fetchedTitle || undefined,
+        expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to shorten URL");
-      }
 
       setNewUrl("");
       setNewUrlTitle("");
@@ -187,20 +146,12 @@ export default function LinksPage() {
     if (!bulkUrls) return;
 
     const urlsToShorten = bulkUrls.split('\n').filter(u => u.trim());
-    const token = localStorage.getItem("auth-token");
     
     // Process sequentially or parallel. Parallel is better for UX.
     // Since backend might not have bulk endpoint, we loop.
     try {
       await Promise.all(urlsToShorten.map(url => 
-         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": token ? `Bearer ${token}` : ""
-            },
-            body: JSON.stringify({ originalUrl: url }),
-         })
+         api.links.create({ originalUrl: url })
       ));
 
       setBulkUrls("");
@@ -215,28 +166,11 @@ export default function LinksPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     
-    // Identify the short code from the ID or if ID is the shortcode.
-    // The previous implementation used ID as primary key.
-    // Let's find the link object to get the shortCode if needed, or if API supports DELETE /id
-    // Providing generic delete logic.
     const linkToDelete = urls.find(u => u.shortCode === deleteId);
     if (!linkToDelete) return;
 
-    const token = localStorage.getItem("auth-token");
-
     try {
-        // Attempt to delete via API. If API doesn't exist, we just remove from state as per previous behavior, 
-        // but since this is "Pro" mode, let's try a DELETE request.
-        // Assuming DELETE /api/urls/{shortCode}
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls/${deleteId}`, {
-            method: 'DELETE',
-            headers: {
-                "Authorization": token ? `Bearer ${token}` : ""
-            }
-        });
-        
-        // If 404/405, we fallback to local delete for demo purposes if valid
-        // But let's assume we maintain state sync.
+        await api.links.delete(deleteId);
         
         const updatedUrls = urls.filter(u => u.shortCode !== deleteId);
         setUrls(updatedUrls);
