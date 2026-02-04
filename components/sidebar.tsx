@@ -40,7 +40,7 @@ export default function Sidebar() {
     <aside
       className={`hidden md:flex ${
         collapsed ? "w-20" : "w-56"
-      } bg-background border-r border-border transition-all duration-300 flex flex-col`}
+      } bg-background border-r border-border transition-[width] duration-300 flex flex-col`}
     >
       {/* Logo Section */}
       <div className="p-2 border-border flex items-center justify-between">
