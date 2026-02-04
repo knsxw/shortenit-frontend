@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-full bg-background flex flex-col font-sans">
       
-      <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 pb-20 md:pb-24">
          {/* Background Gradients */}
          <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
           <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-primary/5 blur-[120px] rounded-full" />
