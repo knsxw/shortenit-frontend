@@ -150,12 +150,23 @@ export default function LinksPage() {
     // Process sequentially or parallel. Parallel is better for UX.
     // Since backend might not have bulk endpoint, we loop.
     try {
-      await Promise.all(urlsToShorten.map(url => 
-         api.links.create({ 
+      setLoading(true);
+      await Promise.all(urlsToShorten.map(async (url) => {
+        let title = url; 
+        try {
+             // Try to fetch title, but proceed even if it fails (using URL as title)
+             const data = await api.links.validate(url);
+             if (data.title) title = data.title;
+        } catch (e) {
+             console.warn(`Failed to fetch title for ${url}`, e);
+        }
+
+        return api.links.create({ 
             originalUrl: url,
+            title: title,
             expirationDays: expirationDays ? parseInt(expirationDays) : undefined
-         })
-      ));
+         });
+      }));
 
       setBulkUrls("");
       setExpirationDays("");
@@ -165,6 +176,8 @@ export default function LinksPage() {
     } catch (error: any) {
       console.error("Failed to bulk shorten URLs", error);
       setErrorObj({ isOpen: true, title: "Error", message: "Failed to process some URLs." });
+    } finally {
+        setLoading(false);
     }
   };
 
