@@ -151,10 +151,15 @@ export default function LinksPage() {
     // Since backend might not have bulk endpoint, we loop.
     try {
       await Promise.all(urlsToShorten.map(url => 
-         api.links.create({ originalUrl: url })
+         api.links.create({ 
+            originalUrl: url,
+            expirationDays: expirationDays ? parseInt(expirationDays) : undefined
+         })
       ));
 
       setBulkUrls("");
+      setExpirationDays("");
+      setShowAdvanced(false);
       setShowBulk(false);
       fetchUrls();
     } catch (error: any) {
@@ -217,6 +222,33 @@ export default function LinksPage() {
                             className="w-full h-32 bg-background border border-input rounded-lg px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             required
                         />
+                         
+                         <div>
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvanced(!showAdvanced)}
+                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                            >
+                                {showAdvanced ? "Hide" : "Show"} Advanced Options
+                            </button>
+                        </div>
+
+                        {showAdvanced && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Expiration (Days)</label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={expirationDays}
+                                        onChange={(e) => setExpirationDays(e.target.value)}
+                                        placeholder="e.g. 7"
+                                    />
+                                    <p className="text-[10px] text-muted-foreground mt-1">Applies to all links in this batch.</p>
+                                </div>
+                            </div>
+                        )}
+
                         <Button type="submit" className="w-full sm:w-auto">
                             <Plus className="w-4 h-4 mr-2" />
                             Bulk Shorten
