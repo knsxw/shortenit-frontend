@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "next-themes";
-import { Trash2, Copy, Check, Plus, Key, Eye, EyeOff } from "lucide-react";
+import { Trash2, Copy, Check, Plus, Key, Eye, EyeOff, Terminal, ExternalLink } from "lucide-react";
 
 interface ApiKey {
   id: string;
@@ -224,6 +224,58 @@ export default function SettingsPage() {
                 </div>
             </Card>
           </div>
+
+          {/* CLI Promotion */}
+          <Card className="p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white dark:from-primary/10 dark:to-background border-none shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Terminal className="w-32 h-32" />
+            </div>
+            
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                         <Terminal className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold">ShortenIt CLI</h2>
+                        <p className="text-sm text-gray-300">Manage links directly from your terminal</p>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 items-center">
+                    <div className="space-y-4">
+                        <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
+                            <code>npm install -g shortenit-cli</code>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli")}>
+                                <Copy className="w-3 h-3" />
+                             </Button>
+                        </div>
+                         <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
+                            <code>shortenit login &lt;your-api-key&gt;</code>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("shortenit login <your-api-key>")}>
+                                <Copy className="w-3 h-3" />
+                             </Button>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <ul className="space-y-2 text-sm text-gray-300">
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Quick link shortening</li>
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Bulk processing support</li>
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Analytics in your terminal</li>
+                        </ul>
+                        <a 
+                            href="https://www.npmjs.com/package/shortenit-cli" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors"
+                        >
+                            View on npm <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+          </Card>
 
           {/* API Keys Management */}
           <Card className="p-6">
