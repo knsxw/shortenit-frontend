@@ -349,7 +349,7 @@ export default function LinksPage() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-col gap-1 mb-2">
-                                    <span className="font-semibold text-foreground text-lg truncate max-w-lg">
+                                    <span className="font-semibold text-foreground text-lg line-clamp-1 md:truncate max-w-full md:max-w-lg">
                                         {url.title || "Untitled Link"}
                                     </span>
                                     <div className="flex items-center gap-2">
@@ -373,7 +373,7 @@ export default function LinksPage() {
                                             {url.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </div>
-                                    <span className="text-xs text-muted-foreground truncate max-w-lg opacity-75">
+                                    <span className="text-xs text-muted-foreground line-clamp-1 md:truncate max-w-full md:max-w-lg opacity-75">
                                         {url.originalUrl}
                                     </span>
                                 </div>
