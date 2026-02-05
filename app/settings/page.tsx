@@ -33,7 +33,7 @@ export default function SettingsPage() {
   const [expirationDays, setExpirationDays] = useState("30");
   const [loadingKeys, setLoadingKeys] = useState(false);
   const [creatingKey, setCreatingKey] = useState(false);
-  const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -136,10 +136,10 @@ export default function SettingsPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const toggleReveal = (id: string) => {
@@ -246,14 +246,14 @@ export default function SettingsPage() {
                     <div className="space-y-4">
                         <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
                             <code>npm install -g shortenit-cli</code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli")}>
-                                <Copy className="w-3 h-3" />
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli", "cli-install")}>
+                                {copiedId === "cli-install" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
                          <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
                             <code>shortenit login &lt;your-api-key&gt;</code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("shortenit login <your-api-key>")}>
-                                <Copy className="w-3 h-3" />
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("shortenit login <your-api-key>", "cli-login")}>
+                                {copiedId === "cli-login" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
                     </div>
@@ -387,10 +387,10 @@ export default function SettingsPage() {
                                             variant="ghost" 
                                             size="icon" 
                                             className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                                            onClick={() => copyToClipboard(key.value || "")}
+                                            onClick={() => copyToClipboard(key.value || "", key.id)}
                                             title="Copy key"
                                         >
-                                            {copiedKey ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                            {copiedId === key.id ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                                         </Button>
                                     </div>
                                 </div>
