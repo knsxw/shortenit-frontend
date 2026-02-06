@@ -3,18 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/components/auth-provider";
 import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  // const { login } = useAuth(); // Not needed for redirect flow currently
-
   const handleMicrosoftLogin = () => {
     setIsLoading(true);
-    // Redirect to backend OAuth2 endpoint to initiate Microsoft login flow
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-    window.location.href = `${baseUrl}/oauth2/authorization/microsoft`;
+    window.location.href = `/oauth2/authorization/microsoft`;
   };
 
   return (
