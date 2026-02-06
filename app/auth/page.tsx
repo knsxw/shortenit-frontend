@@ -13,7 +13,8 @@ export default function LoginPage() {
   const handleMicrosoftLogin = () => {
     setIsLoading(true);
     // Redirect to backend OAuth2 endpoint to initiate Microsoft login flow
-    window.location.href = "/oauth2/authorization/microsoft";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    window.location.href = `${baseUrl}/oauth2/authorization/microsoft`;
   };
 
   return (

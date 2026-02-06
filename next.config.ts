@@ -7,15 +7,19 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://shortenit.freaks.dev/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/api/:path*`,
+      },
+      {
+        source: "/login/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/login/:path*`,
+      },
+       {
+        source: "/oauth2/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/oauth2/:path*`,
       },
       {
         source: "/s/:path*",
-        destination: "https://shortenit.freaks.dev/s/:path*",
-      },
-      {
-        source: "/oauth2/:path*",
-        destination: "https://shortenit.freaks.dev/oauth2/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/s/:path*`,
       }
     ];
   },
