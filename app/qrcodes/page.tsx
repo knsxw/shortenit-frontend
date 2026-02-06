@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -133,6 +133,8 @@ function QRCodesContent() {
     setBgColor(preset.bg);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -142,6 +144,13 @@ function QRCodesContent() {
         setErrorLevel("H");
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoUrl("");
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
     }
   };
 
@@ -204,7 +213,6 @@ function QRCodesContent() {
         <div className="p-6 md:p-8 space-y-8">
           <header>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Sparkles className="w-8 h-8" />
               QR Code Studio
             </h1>
             <p className="text-muted-foreground mt-2">
@@ -415,35 +423,63 @@ function QRCodesContent() {
                 </h3>
                 <div className="space-y-4">
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleLogoUpload}
-                    className="w-full text-sm"
+                    className="hidden"
+                    id="logo-upload"
                   />
+                  
+                  {!logoUrl ? (
+                    <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-all group"
+                    >
+                        <div className="p-3 bg-muted rounded-full mb-3 group-hover:scale-110 transition-transform">
+                            <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm font-medium">Click to upload logo</p>
+                        <p className="text-xs text-muted-foreground mt-1">PNG or JPG, max 2MB</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4 bg-muted/30 p-3 rounded-lg border border-border">
+                        {/* Small preview thumb */}
+                        <div className="w-12 h-12 relative rounded bg-white border border-border flex items-center justify-center overflow-hidden shrink-0">
+                            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">Custom Logo</p>
+                            <p className="text-xs text-muted-foreground">Attached</p>
+                        </div>
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={handleRemoveLogo}
+                            className="text-destructive hover:text-destructive shrink-0"
+                        >
+                            Remove
+                        </Button>
+                    </div>
+                  )}
+
                   {logoUrl && (
-                    <>
-                      <div>
-                        <label className="block text-sm text-muted-foreground mb-2">
-                          Logo Size: {logoSize}%
-                        </label>
+                    <div className="space-y-3 pt-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium">Logo Size</label>
+                            <span className="text-xs text-muted-foreground">{logoSize}%</span>
+                        </div>
                         <input
                           type="range"
                           min="10"
-                          max="25"
+                          max="30"
                           value={logoSize}
                           onChange={(e) =>
                             setLogoSize(parseInt(e.target.value))
                           }
                           className="w-full"
                         />
-                      </div>
-                      <button
-                        onClick={() => setLogoUrl("")}
-                        className="text-sm text-destructive hover:text-destructive/80"
-                      >
-                        Remove Logo
-                      </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
