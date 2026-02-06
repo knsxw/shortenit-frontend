@@ -99,7 +99,7 @@ function QRCodesContent() {
               link.shortUrl ||
               `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/s/${link.code || link.shortCode}`,
             originalUrl: link.originalUrl,
-          })).reverse();
+          }));
           
           if (fetchedUrls.length > 0) {
             setUrls(fetchedUrls);
