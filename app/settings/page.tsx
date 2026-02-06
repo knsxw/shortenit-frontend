@@ -226,49 +226,49 @@ export default function SettingsPage() {
           </div>
 
           {/* CLI Promotion */}
-          <Card className="p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white dark:from-primary/10 dark:to-background border-none shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
+          <Card className="p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Terminal className="w-32 h-32" />
             </div>
             
             <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-                         <Terminal className="w-6 h-6" />
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                         <Terminal className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold">ShortenIt CLI</h2>
-                        <p className="text-sm text-gray-300">Manage links directly from your terminal</p>
+                        <p className="text-sm text-muted-foreground">Manage links directly from your terminal</p>
                     </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 items-center">
                     <div className="space-y-4">
-                        <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
-                            <code>npm install -g shortenit-cli</code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli", "cli-install")}>
+                        <div className="bg-zinc-950 text-zinc-50 rounded-lg p-3 font-mono text-sm border border-zinc-800 flex items-center justify-between shadow-sm">
+                            <code className="text-blue-400">npm <span className="text-zinc-50">install -g</span> shortenit-cli</code>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli", "cli-install")}>
                                 {copiedId === "cli-install" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
-                         <div className="bg-black/40 rounded-lg p-3 font-mono text-sm border border-white/10 flex items-center justify-between">
-                            <code>shortenit login &lt;your-api-key&gt;</code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-white" onClick={() => copyToClipboard("shortenit login <your-api-key>", "cli-login")}>
-                                {copiedId === "cli-login" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                         <div className="bg-zinc-950 text-zinc-50 rounded-lg p-3 font-mono text-sm border border-zinc-800 flex items-center justify-between shadow-sm">
+                            <code className="text-blue-400">shortenit <span className="text-zinc-50">config</span></code>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white" onClick={() => copyToClipboard("shortenit config <your-api-key>", "cli-config")}>
+                                {copiedId === "cli-config" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
                     </div>
                     
                     <div className="space-y-4">
-                        <ul className="space-y-2 text-sm text-gray-300">
-                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Quick link shortening</li>
-                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Bulk processing support</li>
-                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Analytics in your terminal</li>
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Quick link shortening</li>
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Bulk processing support</li>
+                             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" /> Analytics in your terminal</li>
                         </ul>
                         <a 
                             href="https://www.npmjs.com/package/shortenit-cli" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="inline-flex items-center text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors"
+                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                         >
                             View on npm <ExternalLink className="w-3 h-3 ml-1" />
                         </a>
