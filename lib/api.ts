@@ -1,8 +1,8 @@
-import { Url, LinkDetails, AnalyticsData } from "./types";
+import { Url, LinkDetails, AnalyticsData, User } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
-type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestOptions {
   method?: RequestMethod;
@@ -57,5 +57,14 @@ export const api = {
   },
   analytics: {
     get: (code: string) => fetchClient<AnalyticsData>(`/api/analytics/${code}`),
+  },
+  admin: {
+    getUsers: () => fetchClient<User[]>("/api/admin/users"),
+    getUser: (id: number) => fetchClient<User>(`/api/admin/users/${id}`),
+    deleteUser: (id: number) => fetchClient<void>(`/api/admin/users/${id}`, { method: "DELETE" }),
+    updateRole: (id: number, role: string) => fetchClient<User>(`/api/admin/users/${id}/role`, { method: "PATCH", body: { role } }),
+    promote: (id: number) => fetchClient<void>(`/api/admin/users/${id}/promote`, { method: "POST" }),
+    demote: (id: number) => fetchClient<void>(`/api/admin/users/${id}/demote`, { method: "POST" }),
+    checkProtected: () => fetchClient<{ protected: boolean }>("/api/admin/me/protected-status"),
   }
 };

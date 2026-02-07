@@ -58,8 +58,13 @@ export interface AnalyticsData {
     }>;
 }
 
+export type Role = "USER" | "ADMIN";
+
 export interface User {
   id: number;
   email: string;
   name?: string;
+  role: Role;
+  createdAt?: string;
+  updatedAt?: string;
 }

@@ -9,7 +9,11 @@ import { Home, Link2, BarChart2, Settings, QrCode } from "lucide-react";
 
 
 
+import { useAuth } from "@/components/auth-provider";
+import { ShieldCheck } from "lucide-react";
+
 export default function MobileMenu() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -20,6 +24,10 @@ export default function MobileMenu() {
     { label: "Analytics", icon: <BarChart2 className="w-5 h-5" />, href: "/analytics" },
     { label: "Settings", icon: <Settings className="w-5 h-5" />, href: "/settings" },
   ];
+
+  if (user?.role === "ADMIN") {
+      navItems.push({ label: "Admin", icon: <ShieldCheck className="w-5 h-5" />, href: "/admin/users" });
+  }
 
   return (
     <>

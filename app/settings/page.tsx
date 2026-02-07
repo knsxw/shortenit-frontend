@@ -40,7 +40,7 @@ export default function SettingsPage() {
     setMounted(true);
     if (user) {
         setEmail(user.email);
-        setDisplayName(user.name);
+        setDisplayName(user.name || "");
         fetchApiKeys();
     }
   }, [user]);

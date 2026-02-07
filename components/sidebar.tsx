@@ -24,7 +24,11 @@ interface NavItem {
   href: string;
 }
 
+import { useAuth } from "@/components/auth-provider";
+import { ShieldCheck } from "lucide-react";
+
 export default function Sidebar() {
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
@@ -35,6 +39,10 @@ export default function Sidebar() {
     { label: "Analytics", icon: <ChartBar size={20} />, href: "/analytics" },
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
+
+  if (user?.role === "ADMIN") {
+      navItems.push({ label: "Admin", icon: <ShieldCheck size={20} />, href: "/admin/users" });
+  }
 
   return (
     <aside
