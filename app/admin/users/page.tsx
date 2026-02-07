@@ -100,22 +100,87 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="flex-1 p-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 p-4 md:p-8 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Users</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Manage system users and their roles.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-            <Badge variant="outline" className="px-3 py-1">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Badge variant="outline" className="px-3 py-1 whitespace-nowrap">
                 Total: {users.length}
             </Badge>
         </div>
       </div>
 
-      <Card>
+      {/* Mobile View: Cards */}
+      <div className="grid gap-4 md:hidden">
+        {users.map((user) => (
+          <Card key={user.id} className="p-4 space-y-4">
+             <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                      {user.name?.[0]?.toUpperCase() || "U"}
+                   </div>
+                   <div>
+                      <div className="font-medium">{user.name || "Unknown"}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                   </div>
+                </div>
+                <Badge 
+                    variant={user.role === "ADMIN" ? "default" : "secondary"}
+                    className="flex shrink-0 items-center gap-1"
+                  >
+                    {user.role === "ADMIN" ? <ShieldCheck className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
+                    {user.role}
+                  </Badge>
+             </div>
+             
+             <div className="flex items-center justify-between pt-2 border-t text-sm">
+                <span className="text-muted-foreground">Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}</span>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem
+                        onClick={() => navigator.clipboard.writeText(user.email)}
+                      >
+                        Copy Email
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {user.role === "USER" ? (
+                         <DropdownMenuItem onClick={() => handlePromote(user.id)} disabled={actionLoading === user.id}>
+                            <Shield className="mr-2 h-4 w-4 text-blue-500" />
+                            Promote to Admin
+                         </DropdownMenuItem>
+                      ) : (
+                         <DropdownMenuItem onClick={() => handleDemote(user.id)} disabled={actionLoading === user.id}>
+                            <ShieldAlert className="mr-2 h-4 w-4 text-orange-500" />
+                            Demote to User
+                         </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleDelete(user.id)} disabled={actionLoading === user.id} className="text-destructive focus:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete User
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+             </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop View: Table */}
+      <Card className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>

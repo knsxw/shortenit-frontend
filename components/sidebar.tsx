@@ -41,7 +41,8 @@ export default function Sidebar() {
   ];
 
   if (user?.role === "ADMIN") {
-      navItems.push({ label: "Admin", icon: <ShieldCheck size={20} />, href: "/admin/users" });
+      // Insert Admin before Settings (last item)
+      navItems.splice(navItems.length - 1, 0, { label: "Admin", icon: <ShieldCheck size={20} />, href: "/admin/users" });
   }
 
   return (

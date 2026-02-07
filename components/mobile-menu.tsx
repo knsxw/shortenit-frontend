@@ -26,7 +26,8 @@ export default function MobileMenu() {
   ];
 
   if (user?.role === "ADMIN") {
-      navItems.push({ label: "Admin", icon: <ShieldCheck className="w-5 h-5" />, href: "/admin/users" });
+      // Insert Admin before Settings
+      navItems.splice(navItems.length - 1, 0, { label: "Admin", icon: <ShieldCheck className="w-5 h-5" />, href: "/admin/users" });
   }
 
   return (
