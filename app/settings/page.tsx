@@ -205,12 +205,12 @@ export default function SettingsPage() {
                     <label className="text-sm font-medium text-foreground">
                     Theme
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                     {["light", "dark", "system"].map((themeOption) => (
                         <button
                         key={themeOption}
                         onClick={() => setTheme(themeOption)}
-                        className={`px-4 py-2 rounded-lg border transition-colors capitalize ${
+                        className={`px-4 py-2 rounded-lg border transition-colors capitalize flex-1 sm:flex-none ${
                             theme === themeOption
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-background border-border text-foreground hover:border-primary"
