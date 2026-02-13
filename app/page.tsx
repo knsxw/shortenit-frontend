@@ -211,7 +211,7 @@ export default function Home() {
                          <span>Shortening...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 hover:cursor-pointer hover:bg-primary/80">
                         <span>Shorten It</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>

@@ -294,8 +294,8 @@ export default function LinksPage() {
                             </div>
                         )}
 
-                        <Button type="submit" className="w-full sm:w-auto">
-                            <Plus className="w-4 h-4 mr-2" />
+                        <Button type="submit" className="w-full sm:w-auto hover:cursor-pointer hover:bg-primary/80">
+                            <Plus className="w-4 h-4" />
                             Bulk Shorten
                         </Button>
                     </form>
@@ -310,9 +310,9 @@ export default function LinksPage() {
                                 className="flex-1"
                                 required
                             />
-                            <Button type="submit" className="w-full sm:w-auto">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Shorten it
+                            <Button type="submit" className="w-full sm:w-auto hover:cursor-pointer hover:bg-primary/80">
+                                <Plus className="w-4 h-4" />
+                                <span className="">Shorten it</span>
                             </Button>
                         </div>
 
@@ -378,7 +378,7 @@ export default function LinksPage() {
               <div className="grid gap-4">
                 {displayedUrls.map((url) => (
                     <Card key={url.shortCode} className="group relative transition-all duration-300 hover:border-primary/50 shadow-sm hover:shadow-md border-border bg-card">
-                        <CardContent className="pt-6">
+                        <CardContent>
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-col gap-1 mb-2">
