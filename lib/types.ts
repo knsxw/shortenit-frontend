@@ -8,6 +8,21 @@ export interface Url {
   customAlias?: string;
   title: string;
   isActive?: boolean;
+  owner?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface PaginatedLinksResponse {
+  content: Array<Url>;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
 }
 
 export interface LinkDetails {

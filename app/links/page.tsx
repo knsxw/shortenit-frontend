@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode, Settings } from "lucide-react";
+import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode, Settings, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { api } from "@/lib/api";
 import { Url } from "@/lib/types";
+import { useAuth } from "@/components/auth-provider";
 
 export default function LinksPage() {
+  const { user } = useAuth();
   const [urls, setUrls] = useState<Url[]>([]);
   const [displayedUrls, setDisplayedUrls] = useState<Url[]>([]);
   const [newUrl, setNewUrl] = useState("");
@@ -22,6 +24,7 @@ export default function LinksPage() {
   const [showBulk, setShowBulk] = useState(false);
   const [bulkUrls, setBulkUrls] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showAllLinks, setShowAllLinks] = useState(false);
   
   // Pagination State
   const [page, setPage] = useState(0);
@@ -60,7 +63,7 @@ export default function LinksPage() {
   // Fetch Links
   useEffect(() => {
     fetchUrls();
-  }, []);
+  }, [showAllLinks]);
 
   // Filter and Paginate locally (since API is simple GET /urls returning all)
   useEffect(() => {
@@ -88,7 +91,15 @@ export default function LinksPage() {
   const fetchUrls = async () => {
     setLoading(true);
     try {
-      const data = await api.links.getAll();
+      let data;
+      if (showAllLinks && user?.role === "ADMIN") {
+        // Fetch all links from admin endpoint
+        data = await api.admin.getAllLinks({ page: 0, size: 1000, sortBy: "createdAt", direction: "DESC" });
+      } else {
+        // Fetch user's own links
+        data = await api.links.getAll();
+      }
+      
       const linksList = Array.isArray(data) ? data : ((data as any)?.content || (data as any)?.urls || []);
       const mappedUrls = linksList.map((link: any) => ({
         id: link.id,
@@ -100,6 +111,7 @@ export default function LinksPage() {
         customAlias: link.customAlias,
         title: link.title,
         isActive: link.isActive !== undefined ? link.isActive : true,
+        owner: link.owner,
       }));
       setUrls(mappedUrls);
     } catch (error) {
@@ -209,6 +221,26 @@ export default function LinksPage() {
         <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Links</h1>
+            {user?.role === "ADMIN" && (
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <Button
+                  variant={!showAllLinks ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setShowAllLinks(false)}
+                  className="text-sm"
+                >
+                  My Links
+                </Button>
+                <Button
+                  variant={showAllLinks ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setShowAllLinks(true)}
+                  className="text-sm"
+                >
+                  All Links
+                </Button>
+              </div>
+            )}
         </header>
 
         {/* Create Section */}
@@ -378,13 +410,21 @@ export default function LinksPage() {
                                             {url.originalUrl}
                                         </span>
                                     </div>
-                                    
+                                
+                                <div className="flex flex-col gap-1">
                                     <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                         <span>{new Date(url.createdAt).toLocaleDateString()}</span>
-                                         <span>•</span>
-                                         <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3" /> {url.clickCount} clicks</span>
+                                        <span>{new Date(url.createdAt).toLocaleDateString()}</span>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3" /> {url.clickCount} clicks</span>
                                     </div>
+                                    {url.owner && (
+                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <UserIcon className="w-3 h-3" />
+                                            <span>{url.owner.name} ({url.owner.email})</span>
+                                        </div>
+                                    )}
                                 </div>
+                            </div>
 
                                 <div className="flex items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0">
                                     <Link href={`/qrcodes?code=${url.shortCode}`}>

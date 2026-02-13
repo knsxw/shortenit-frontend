@@ -59,6 +59,15 @@ export const api = {
     get: (code: string) => fetchClient<AnalyticsData>(`/api/analytics/${code}`),
   },
   admin: {
+    getAllLinks: (params?: { page?: number; size?: number; sortBy?: string; direction?: string }) => {
+      const queryParams = new URLSearchParams();
+      if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+      if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+      if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params?.direction) queryParams.append('direction', params.direction);
+      const queryString = queryParams.toString();
+      return fetchClient<any>(`/api/admin/urls${queryString ? `?${queryString}` : ''}`);
+    },
     getUsers: () => fetchClient<User[]>("/api/admin/users"),
     getUser: (id: number) => fetchClient<User>(`/api/admin/users/${id}`),
     deleteUser: (id: number) => fetchClient<void>(`/api/admin/users/${id}`, { method: "DELETE" }),
