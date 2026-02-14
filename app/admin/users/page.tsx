@@ -155,7 +155,7 @@ export default function AdminUsersPage() {
                 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:cursor-pointer">
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className="h-8 w-8 p-0 hover:cursor-pointer">
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -278,6 +278,7 @@ export default function AdminUsersPage() {
               size="sm"
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
+              className="hover:cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
@@ -307,7 +308,7 @@ export default function AdminUsersPage() {
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => goToPage(page)}
-                    className="w-8 h-8 p-0"
+                    className="w-8 h-8 p-0 hover:cursor-pointer"
                   >
                     {page}
                   </Button>
@@ -320,6 +321,7 @@ export default function AdminUsersPage() {
               size="sm"
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="hover:cursor-pointer"
             >
               Next
               <ChevronRight className="h-4 w-4" />

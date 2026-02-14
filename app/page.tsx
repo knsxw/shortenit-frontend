@@ -203,7 +203,7 @@ export default function Home() {
                     type="submit"
                     disabled={isLoading}
                     size="lg"
-                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/50 text-primary-foreground shadow-lg hover:cursor-pointer hover:bg-primary/80 transition-all duration-300 active:scale-95 shrink-0"
+                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/80 text-primary-foreground shadow-lg hover:cursor-pointer transition-all duration-300 active:scale-95 shrink-0"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function Home() {
                   <span className="w-2 h-8 rounded-full bg-primary" />
                   Recent Links
                 </h2>
-                <Link href="/links" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                <Link href="/links" className="text-sm font-medium text-primary hover:text-primary/80 hover:cursor-pointer transition-colors">
                   View all
                 </Link>
               </div>
@@ -294,14 +294,14 @@ export default function Home() {
                           size="icon"
                           onClick={() => handleCopy(link.shortUrl || `${window.location.origin}/${link.shortCode}`, link.id || link.shortCode)}
                           className={cn(
-                            "h-9 w-9 rounded-lg transition-all", 
+                            "h-9 w-9 rounded-lg transition-all hover:cursor-pointer", 
                             copiedId === (link.id || link.shortCode) ? "text-green-600 bg-green-50" : "text-muted-foreground hover:text-foreground"
                           )}
                         >
                           {copiedId === (link.id || link.shortCode) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </Button>
                          <Link href={`/analytics/${link.shortCode}`}>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:cursor-pointer">
                                <BarChart3 className="w-4 h-4" />
                             </Button>
                         </Link>

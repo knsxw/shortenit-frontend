@@ -227,7 +227,7 @@ export default function LinksPage() {
                   variant={!showAllLinks ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setShowAllLinks(false)}
-                  className="text-sm hover:cursor-pointer hover:bg-primary/80"
+                  className="text-sm hover:cursor-pointer "
                 >
                   My Links
                 </Button>
@@ -235,7 +235,7 @@ export default function LinksPage() {
                   variant={showAllLinks ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setShowAllLinks(true)}
-                  className="text-sm hover:cursor-pointer hover:bg-primary/80"
+                  className="text-sm hover:cursor-pointer "
                 >
                   All Links
                 </Button>

@@ -110,7 +110,7 @@ export default function Sidebar() {
       <div className="p-2 border-t border-border">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full p-2 rounded-lg hover:bg-muted text-foreground transition-colors flex items-center justify-center"
+          className="w-full p-2 rounded-lg hover:bg-muted text-foreground hover:cursor-pointer transition-colors flex items-center justify-center"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}

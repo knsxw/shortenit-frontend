@@ -12,7 +12,6 @@ import {
   TrendingUp,
   ArrowUpRight,
   Link2,
-  LayoutGrid,
 } from "lucide-react";
 import {
   BarChart,

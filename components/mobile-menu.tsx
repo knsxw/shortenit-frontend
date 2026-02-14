@@ -42,7 +42,7 @@ export default function MobileMenu() {
         </div>
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 hover:bg-muted rounded-lg text-foreground"
+          className="p-2 hover:bg-muted rounded-lg text-foreground hover:cursor-pointer"
         >
           <svg
             className="w-6 h-6"
@@ -88,9 +88,11 @@ export default function MobileMenu() {
             })}
           </nav>
           <div className="p-4 border-t border-border">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              Create new
-            </Button>
+            <Link href="/links">
+              <Button className="w-full bg-primary hover:bg-primary/80 hover:cursor-pointer text-primary-foreground">
+                Create new
+              </Button>
+            </Link>
           </div>
         </div>
       )}
