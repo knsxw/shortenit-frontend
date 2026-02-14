@@ -222,12 +222,12 @@ export default function LinksPage() {
         <header className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Links</h1>
             {user?.role === "ADMIN" && (
-              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1 ">
                 <Button
                   variant={!showAllLinks ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setShowAllLinks(false)}
-                  className="text-sm"
+                  className="text-sm hover:cursor-pointer hover:bg-primary/80"
                 >
                   My Links
                 </Button>
@@ -235,7 +235,7 @@ export default function LinksPage() {
                   variant={showAllLinks ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setShowAllLinks(true)}
-                  className="text-sm"
+                  className="text-sm hover:cursor-pointer hover:bg-primary/80"
                 >
                   All Links
                 </Button>
@@ -252,7 +252,7 @@ export default function LinksPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowBulk(!showBulk)}
-                        className="text-primary hover:text-primary/80"
+                        className="text-primary hover:text-primary/80 hover:cursor-pointer"
                     >
                         {showBulk ? "Switch to Single" : "Switch to Bulk"}
                     </Button>
@@ -272,7 +272,7 @@ export default function LinksPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                className="text-sm text-primary hover:underline hover:cursor-pointer   flex items-center gap-1"
                             >
                                 {showAdvanced ? "Hide" : "Show"} Advanced Options
                             </button>
@@ -320,7 +320,7 @@ export default function LinksPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                className="text-sm text-primary hover:underline hover:cursor-pointer flex items-center gap-1"
                             >
                                 {showAdvanced ? "Hide" : "Show"} Advanced Options
                             </button>

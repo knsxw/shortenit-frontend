@@ -75,8 +75,8 @@ export default function Sidebar() {
 
       {/* Create New Button */}
       <div className="p-4 border-b border-border">
-        <Link href="/" className="block">
-          <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Link href="/links" className="block">
+          <Button className="w-full bg-primary hover:cursor-pointer hover:bg-primary/80 text-primary-foreground">
             {collapsed ? <Plus /> : "Create New"}
           </Button>
         </Link>

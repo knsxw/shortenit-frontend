@@ -203,7 +203,7 @@ export default function Home() {
                     type="submit"
                     disabled={isLoading}
                     size="lg"
-                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 active:scale-95 shrink-0"
+                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/50 text-primary-foreground shadow-lg hover:cursor-pointer hover:bg-primary/80 transition-all duration-300 active:scale-95 shrink-0"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function Home() {
                          <span>Shortening...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 hover:cursor-pointer hover:bg-primary/80">
+                      <div className="flex items-center gap-2 ">
                         <span>Shorten It</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
