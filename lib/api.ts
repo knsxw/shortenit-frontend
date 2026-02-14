@@ -29,7 +29,56 @@ async function fetchClient<T>(endpoint: string, options: RequestOptions = {}): P
     url = `${API_BASE_URL}${endpoint}`;
   }
 
-  const response = await fetch(url, config);
+  let response = await fetch(url, config);
+
+  // Auto-refresh token on 401 (skip for auth endpoints to avoid loops)
+  if (response.status === 401 && !endpoint.includes("/api/auth/")) {
+    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh-token") : null;
+    if (refreshToken) {
+      try {
+        const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
+        const refreshResponse = await fetch(refreshUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          const newToken = data.accessToken || data.token;
+          if (newToken) {
+            localStorage.setItem("auth-token", newToken);
+            if (data.refreshToken) {
+              localStorage.setItem("refresh-token", data.refreshToken);
+            }
+
+            // Retry the original request with new token
+            const retryConfig: RequestInit = {
+              ...config,
+              headers: {
+                ...config.headers as Record<string, string>,
+                Authorization: `Bearer ${newToken}`,
+              },
+            };
+            response = await fetch(url, retryConfig);
+          }
+        } else {
+          // Refresh failed — clear tokens
+          localStorage.removeItem("auth-token");
+          localStorage.removeItem("refresh-token");
+          localStorage.removeItem("auth-user");
+          if (typeof window !== "undefined") {
+            window.location.href = "/auth";
+          }
+        }
+      } catch {
+        // Refresh request failed entirely
+        localStorage.removeItem("auth-token");
+        localStorage.removeItem("refresh-token");
+        localStorage.removeItem("auth-user");
+      }
+    }
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -45,6 +94,15 @@ async function fetchClient<T>(endpoint: string, options: RequestOptions = {}): P
 }
 
 export const api = {
+  auth: {
+    refresh: (refreshToken: string) =>
+      fetchClient<{ accessToken: string; refreshToken?: string }>("/api/auth/refresh", {
+        method: "POST",
+        body: { refreshToken },
+      }),
+    logout: () =>
+      fetchClient<void>("/api/auth/logout", { method: "POST" }),
+  },
   links: {
     getAll: () => fetchClient<Url[]>("/api/urls"),
     getOne: (code: string) => fetchClient<LinkDetails>(`/api/urls/${code}`),

@@ -4,11 +4,12 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { User } from "@/lib/types";
+import { api } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string, refreshToken?: string) => void;
   logout: () => void;
 }
 
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           localStorage.removeItem("auth-user");
           localStorage.removeItem("auth-token");
+          localStorage.removeItem("refresh-token");
         }
       } catch (error) {
         console.error("Auth check failed:", error);
@@ -62,19 +64,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const login = (userData: User, token: string) => {
+  const login = (userData: User, token: string, refreshToken?: string) => {
     localStorage.setItem("auth-user", JSON.stringify(userData));
     localStorage.setItem("auth-token", token);
+    if (refreshToken) {
+      localStorage.setItem("refresh-token", refreshToken);
+    }
     setUser(userData);
     router.push("/");
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Call backend logout to invalidate token
+    try {
+      await api.auth.logout();
+    } catch (error) {
+      console.error("Logout API call failed:", error);
+    }
     localStorage.removeItem("auth-user");
     localStorage.removeItem("auth-token");
+    localStorage.removeItem("refresh-token");
     setUser(null);
-    // Call API logout if exists
-    // fetch('/api/auth/logout', { method: 'POST' });
     router.push("/auth");
   };
 

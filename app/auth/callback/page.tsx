@@ -35,7 +35,7 @@ function CallbackContent() {
         role: "USER"
       };
 
-      login(tempUser, accessToken);
+      login(tempUser, accessToken, refreshToken || undefined);
       // Login function redirects to /, but we rely on AuthProvider to check /api/auth/me
       // Force redirect just in case
       window.location.href = "/";
