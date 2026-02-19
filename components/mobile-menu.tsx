@@ -5,14 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-import { Home, Link2, BarChart2, Settings, QrCode } from "lucide-react";
+import { Home, Link2, BarChart2, Settings, QrCode, LogOut } from "lucide-react";
 
 
 import { useAuth } from "@/components/auth-provider";
 import { ShieldCheck } from "lucide-react";
 
 export default function MobileMenu() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -86,12 +86,15 @@ export default function MobileMenu() {
               );
             })}
           </nav>
-          <div className="p-4 border-t border-border">
-            <Link href="/links">
-              <Button className="w-full bg-primary hover:bg-primary/80 hover:cursor-pointer text-primary-foreground">
-                Create new
-              </Button>
-            </Link>
+          <div className="px-2 pb-2 space-y-1">
+            <div className="border-t border-border my-1" />
+            <button
+              onClick={() => { setOpen(false); logout(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 hover:cursor-pointer transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Sign Out</span>
+            </button>
           </div>
         </div>
       )}
