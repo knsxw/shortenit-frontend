@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Home, Link2, BarChart2, Settings, QrCode } from "lucide-react";
 
 
-
 import { useAuth } from "@/components/auth-provider";
 import { ShieldCheck } from "lucide-react";
 
@@ -35,10 +34,10 @@ export default function MobileMenu() {
       {/* Header */}
       <div className="bg-background border-b border-border p-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            S
+          <div className="w-8 h-8 bg-gradient-to-br from-primary via-blue-600 to-violet-600 rounded-lg flex items-center justify-center shadow-md shadow-primary/25">
+            <Link2 className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-lg text-foreground">Shortenit</span>
+          <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">Shortenit</span>
         </div>
         <button
           onClick={() => setOpen(!open)}
