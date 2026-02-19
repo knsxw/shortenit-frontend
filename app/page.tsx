@@ -80,8 +80,15 @@ export default function Home() {
       return;
     }
 
+    // Auto-prepend https:// if no protocol is specified
+    let urlToShorten = longUrl.trim();
+    if (!/^https?:\/\//i.test(urlToShorten)) {
+      urlToShorten = `https://${urlToShorten}`;
+      setLongUrl(urlToShorten);
+    }
+
     try {
-      new URL(longUrl);
+      new URL(urlToShorten);
     } catch {
       setError("Please enter a valid URL");
       return;
@@ -95,7 +102,7 @@ export default function Home() {
       const validationRes = await fetch("/internal/validate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: longUrl }),
+        body: JSON.stringify({ url: urlToShorten }),
       });
 
       if (!validationRes.ok) {
@@ -115,7 +122,7 @@ export default function Home() {
             "Authorization": token ? `Bearer ${token}` : ""
           },
           body: JSON.stringify({
-            originalUrl: longUrl,
+            originalUrl: urlToShorten,
             title: title || fetchedTitle || undefined,
           }),
         }
@@ -190,7 +197,7 @@ export default function Home() {
                     </div>
                     <Input
                       id="url"
-                      type="url"
+                      type="text"
                       placeholder="Paste your long URL here..."
                       value={longUrl}
                       onChange={(e) => setLongUrl(e.target.value)}
@@ -203,7 +210,7 @@ export default function Home() {
                     type="submit"
                     disabled={isLoading}
                     size="lg"
-                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300 active:scale-95 shrink-0"
+                    className="h-14 px-8 rounded-xl font-semibold bg-primary hover:bg-primary/80 text-primary-foreground shadow-lg hover:cursor-pointer transition-all duration-300 active:scale-95 shrink-0"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
@@ -211,7 +218,7 @@ export default function Home() {
                          <span>Shortening...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 ">
                         <span>Shorten It</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
@@ -251,7 +258,7 @@ export default function Home() {
                   <span className="w-2 h-8 rounded-full bg-primary" />
                   Recent Links
                 </h2>
-                <Link href="/links" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                <Link href="/links" className="text-sm font-medium text-primary hover:text-primary/80 hover:cursor-pointer transition-colors">
                   View all
                 </Link>
               </div>
@@ -294,14 +301,14 @@ export default function Home() {
                           size="icon"
                           onClick={() => handleCopy(link.shortUrl || `${window.location.origin}/${link.shortCode}`, link.id || link.shortCode)}
                           className={cn(
-                            "h-9 w-9 rounded-lg transition-all", 
+                            "h-9 w-9 rounded-lg transition-all hover:cursor-pointer", 
                             copiedId === (link.id || link.shortCode) ? "text-green-600 bg-green-50" : "text-muted-foreground hover:text-foreground"
                           )}
                         >
                           {copiedId === (link.id || link.shortCode) ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </Button>
                          <Link href={`/analytics/${link.shortCode}`}>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:cursor-pointer">
                                <BarChart3 className="w-4 h-4" />
                             </Button>
                         </Link>

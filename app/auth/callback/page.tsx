@@ -3,6 +3,7 @@
 import { useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { User, Role } from "@/lib/types";
 
 function CallbackContent() {
   const router = useRouter();
@@ -27,14 +28,14 @@ function CallbackContent() {
       processedRef.current = true;
       // Construct a temporary user object.
       // We will fetch the full profile from /api/auth/me immediately after.
-      const tempUser = {
+      const tempUser: User = {
         id: 0, // Temporary ID
         name: userEmail.split("@")[0], // Temporary Name
         email: userEmail,
         role: "USER"
       };
 
-      login(tempUser, accessToken);
+      login(tempUser, accessToken, refreshToken || undefined);
       // Login function redirects to /, but we rely on AuthProvider to check /api/auth/me
       // Force redirect just in case
       window.location.href = "/";

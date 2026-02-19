@@ -40,7 +40,7 @@ export default function SettingsPage() {
     setMounted(true);
     if (user) {
         setEmail(user.email);
-        setDisplayName(user.name);
+        setDisplayName(user.name || "");
         fetchApiKeys();
     }
   }, [user]);
@@ -205,12 +205,12 @@ export default function SettingsPage() {
                     <label className="text-sm font-medium text-foreground">
                     Theme
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                     {["light", "dark", "system"].map((themeOption) => (
                         <button
                         key={themeOption}
                         onClick={() => setTheme(themeOption)}
-                        className={`px-4 py-2 rounded-lg border transition-colors capitalize ${
+                        className={`px-4 py-2 rounded-lg border transition-colors capitalize flex-1 sm:flex-none hover:cursor-pointer ${
                             theme === themeOption
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-background border-border text-foreground hover:border-primary"
@@ -246,13 +246,13 @@ export default function SettingsPage() {
                     <div className="space-y-4">
                         <div className="bg-zinc-950 text-zinc-50 rounded-lg p-3 font-mono text-sm border border-zinc-800 flex items-center justify-between shadow-sm">
                             <code className="text-blue-400">npm <span className="text-zinc-50">install -g</span> shortenit-cli</code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white" onClick={() => copyToClipboard("npm install -g shortenit-cli", "cli-install")}>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white hover:cursor-pointer" onClick={() => copyToClipboard("npm install -g shortenit-cli", "cli-install")}>
                                 {copiedId === "cli-install" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
                          <div className="bg-zinc-950 text-zinc-50 rounded-lg p-3 font-mono text-sm border border-zinc-800 flex items-center justify-between shadow-sm">
                             <code className="text-blue-400">shortenit <span className="text-zinc-50">config</span></code>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white" onClick={() => copyToClipboard("shortenit config <your-api-key>", "cli-config")}>
+                             <Button variant="ghost" size="icon" className="h-6 w-6 text-zinc-400 hover:text-white hover:cursor-pointer" onClick={() => copyToClipboard("shortenit config <your-api-key>", "cli-config")}>
                                 {copiedId === "cli-config" ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                              </Button>
                         </div>
@@ -268,7 +268,7 @@ export default function SettingsPage() {
                             href="https://www.npmjs.com/package/shortenit-cli" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 hover:cursor-pointer transition-colors"
                         >
                             View on npm <ExternalLink className="w-3 h-3 ml-1" />
                         </a>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
                             className="bg-background"
                         />
                     </div>
-                    <Button type="submit" disabled={creatingKey || !newKeyName.trim()}>
+                    <Button type="submit" disabled={creatingKey || !newKeyName.trim()} className="hover:cursor-pointer">
                         {creatingKey ? (
                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         ) : (
@@ -352,7 +352,7 @@ export default function SettingsPage() {
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 hover:cursor-pointer shrink-0"
                                         onClick={() => deleteApiKey(key.id)}
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -371,7 +371,7 @@ export default function SettingsPage() {
                                         <Button 
                                             variant="ghost" 
                                             size="icon" 
-                                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:cursor-pointer"
                                             onClick={() => toggleReveal(key.id)}
                                             title={revealedKeys.has(key.id) ? "Hide key" : "Reveal key"}
                                         >
@@ -386,7 +386,7 @@ export default function SettingsPage() {
                                         <Button 
                                             variant="ghost" 
                                             size="icon" 
-                                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:cursor-pointer"
                                             onClick={() => copyToClipboard(key.value || "", key.id)}
                                             title="Copy key"
                                         >

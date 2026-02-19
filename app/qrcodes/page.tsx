@@ -265,7 +265,7 @@ function QRCodesContent() {
                 </div>
               </div>
 
-              <Button onClick={downloadQRCode} size="lg" className="w-full">
+              <Button onClick={downloadQRCode} size="lg" className="w-full hover:cursor-pointer">
                 <Download className="w-4 h-4 mr-2" />
                 Download QR Code (PNG)
               </Button>
@@ -282,7 +282,7 @@ function QRCodesContent() {
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full flex items-center justify-between bg-background border border-border rounded-lg px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full flex items-center justify-between bg-background border border-border rounded-lg px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-ring hover:cursor-pointer"
                   >
                     <span className="truncate">
                       {selectedUrl ? `${selectedUrl.shortCode} - ${selectedUrl.originalUrl}` : "Select a link..."}
@@ -357,7 +357,7 @@ function QRCodesContent() {
                     <button
                       key={preset.name}
                       onClick={() => applyColorPreset(preset)}
-                      className="p-4 rounded-lg border-2 border-border hover:border-primary transition-all"
+                      className="p-4 rounded-lg border-2 border-border hover:border-primary hover:cursor-pointer transition-all"
                       style={{ backgroundColor: preset.bg }}
                       title={preset.name}
                     >
@@ -456,7 +456,7 @@ function QRCodesContent() {
                             variant="ghost" 
                             size="sm" 
                             onClick={handleRemoveLogo}
-                            className="text-destructive hover:text-destructive shrink-0"
+                            className="text-destructive hover:text-destructive hover:cursor-pointer shrink-0"
                         >
                             Remove
                         </Button>
@@ -492,7 +492,7 @@ function QRCodesContent() {
                     <button
                       key={level.value}
                       onClick={() => setErrorLevel(level.value as any)}
-                      className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                      className={`p-3 rounded-lg border-2 text-sm font-medium transition-all hover:cursor-pointer ${
                         errorLevel === level.value
                           ? "border-primary bg-primary/10"
                           : "border-border hover:border-primary"

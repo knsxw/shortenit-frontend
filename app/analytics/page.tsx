@@ -12,7 +12,6 @@ import {
   TrendingUp,
   ArrowUpRight,
   Link2,
-  LayoutGrid,
 } from "lucide-react";
 import {
   BarChart,
@@ -223,7 +222,6 @@ export default function AnalyticsPage() {
           {/* Header */}
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight inline-flex items-center gap-3">
-              <LayoutGrid className="w-8 h-8 text-primary" />
               Analytics Dashboard
             </h1>
             <p className="text-muted-foreground text-lg">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode, Settings } from "lucide-react";
+import { Copy, Plus, BarChart2, Trash2, ChevronLeft, ChevronRight, Search, Check, Lock, AlertCircle, QrCode, Settings, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { api } from "@/lib/api";
 import { Url } from "@/lib/types";
+import { useAuth } from "@/components/auth-provider";
 
 export default function LinksPage() {
+  const { user } = useAuth();
   const [urls, setUrls] = useState<Url[]>([]);
   const [displayedUrls, setDisplayedUrls] = useState<Url[]>([]);
   const [newUrl, setNewUrl] = useState("");
@@ -22,6 +24,7 @@ export default function LinksPage() {
   const [showBulk, setShowBulk] = useState(false);
   const [bulkUrls, setBulkUrls] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showAllLinks, setShowAllLinks] = useState(false);
   
   // Pagination State
   const [page, setPage] = useState(0);
@@ -60,7 +63,7 @@ export default function LinksPage() {
   // Fetch Links
   useEffect(() => {
     fetchUrls();
-  }, []);
+  }, [showAllLinks]);
 
   // Filter and Paginate locally (since API is simple GET /urls returning all)
   useEffect(() => {
@@ -88,7 +91,15 @@ export default function LinksPage() {
   const fetchUrls = async () => {
     setLoading(true);
     try {
-      const data = await api.links.getAll();
+      let data;
+      if (showAllLinks && user?.role === "ADMIN") {
+        // Fetch all links from admin endpoint
+        data = await api.admin.getAllLinks({ page: 0, size: 1000, sortBy: "createdAt", direction: "DESC" });
+      } else {
+        // Fetch user's own links
+        data = await api.links.getAll();
+      }
+      
       const linksList = Array.isArray(data) ? data : ((data as any)?.content || (data as any)?.urls || []);
       const mappedUrls = linksList.map((link: any) => ({
         id: link.id,
@@ -100,6 +111,7 @@ export default function LinksPage() {
         customAlias: link.customAlias,
         title: link.title,
         isActive: link.isActive !== undefined ? link.isActive : true,
+        owner: link.owner,
       }));
       setUrls(mappedUrls);
     } catch (error) {
@@ -116,12 +128,19 @@ export default function LinksPage() {
     setLoading(true);
 
     try {
+      // Auto-prepend https:// if no protocol is specified
+      let urlToShorten = newUrl.trim();
+      if (!/^https?:\/\//i.test(urlToShorten)) {
+        urlToShorten = `https://${urlToShorten}`;
+        setNewUrl(urlToShorten);
+      }
+
       // 1. Validate URL and fetch Title via internal API
-      const { title: fetchedTitle } = await api.links.validate(newUrl);
+      const { title: fetchedTitle } = await api.links.validate(urlToShorten);
 
       // 2. Proceed to shorten with the fetched title
       await api.links.create({
-        originalUrl: newUrl,
+        originalUrl: urlToShorten,
         code: customAlias || undefined,
         title: newUrlTitle || fetchedTitle || undefined,
         expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
@@ -209,6 +228,26 @@ export default function LinksPage() {
         <div className="max-w-6xl mx-auto space-y-8">
         <header className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Links</h1>
+            {user?.role === "ADMIN" && (
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1 ">
+                <Button
+                  variant={!showAllLinks ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setShowAllLinks(false)}
+                  className="text-sm hover:cursor-pointer "
+                >
+                  My Links
+                </Button>
+                <Button
+                  variant={showAllLinks ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setShowAllLinks(true)}
+                  className="text-sm hover:cursor-pointer "
+                >
+                  All Links
+                </Button>
+              </div>
+            )}
         </header>
 
         {/* Create Section */}
@@ -220,7 +259,7 @@ export default function LinksPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowBulk(!showBulk)}
-                        className="text-primary hover:text-primary/80"
+                        className="text-primary hover:text-primary/80 hover:cursor-pointer"
                     >
                         {showBulk ? "Switch to Single" : "Switch to Bulk"}
                     </Button>
@@ -240,7 +279,7 @@ export default function LinksPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                className="text-sm text-primary hover:underline hover:cursor-pointer   flex items-center gap-1"
                             >
                                 {showAdvanced ? "Hide" : "Show"} Advanced Options
                             </button>
@@ -262,8 +301,8 @@ export default function LinksPage() {
                             </div>
                         )}
 
-                        <Button type="submit" className="w-full sm:w-auto">
-                            <Plus className="w-4 h-4 mr-2" />
+                        <Button type="submit" className="w-full sm:w-auto hover:cursor-pointer hover:bg-primary/80">
+                            <Plus className="w-4 h-4" />
                             Bulk Shorten
                         </Button>
                     </form>
@@ -271,16 +310,16 @@ export default function LinksPage() {
                     <form onSubmit={handleShorten} className="space-y-4">
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Input
-                                type="url"
+                                type="text"
                                 value={newUrl}
                                 onChange={(e) => setNewUrl(e.target.value)}
                                 placeholder="Paste your long URL here..."
                                 className="flex-1"
                                 required
                             />
-                            <Button type="submit" className="w-full sm:w-auto">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Shorten it
+                            <Button type="submit" className="w-full sm:w-auto hover:cursor-pointer hover:bg-primary/80">
+                                <Plus className="w-4 h-4" />
+                                <span className="">Shorten it</span>
                             </Button>
                         </div>
 
@@ -288,7 +327,7 @@ export default function LinksPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                className="text-sm text-primary hover:underline hover:cursor-pointer flex items-center gap-1"
                             >
                                 {showAdvanced ? "Hide" : "Show"} Advanced Options
                             </button>
@@ -343,74 +382,84 @@ export default function LinksPage() {
                 No links found.
              </Card>
           ) : (
-             <div className="grid gap-4">
+              <div className="grid gap-4">
                 {displayedUrls.map((url) => (
-                    <Card key={url.shortCode} className="group relative p-4 transition-all duration-300 hover:border-primary/50 shadow-sm hover:shadow-md">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-col gap-1 mb-2">
-                                    <span className="font-semibold text-foreground text-lg line-clamp-1 md:truncate max-w-full md:max-w-lg">
-                                        {url.title || "Untitled Link"}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={url.shortUrl}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="font-mono text-sm font-bold text-primary hover:underline hover:text-primary/80 truncate"
-                                        >
-                                            {url.shortUrl.replace(/^https?:\/\//, '')}
-                                        </a>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                                            onClick={() => copyToClipboard(url.shortUrl, url.shortCode)}
-                                        >
-                                            {copiedUrlId === url.shortCode ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                                        </Button>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${url.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
-                                            {url.isActive ? 'Active' : 'Inactive'}
+                    <Card key={url.shortCode} className="group relative transition-all duration-300 hover:border-primary/50 shadow-sm hover:shadow-md border-border bg-card">
+                        <CardContent>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-col gap-1 mb-2">
+                                        <span className="font-semibold text-foreground text-lg line-clamp-1 md:truncate">
+                                            {url.title || "Untitled Link"}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <a
+                                                href={url.shortUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="font-mono text-sm font-bold text-primary hover:underline hover:text-primary/80 truncate"
+                                            >
+                                                {url.shortUrl.replace(/^https?:\/\//, '')}
+                                            </a>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                                onClick={() => copyToClipboard(url.shortUrl, url.shortCode)}
+                                            >
+                                                {copiedUrlId === url.shortCode ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                            </Button>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${url.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                                {url.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground line-clamp-1 md:truncate opacity-75">
+                                            {url.originalUrl}
                                         </span>
                                     </div>
-                                    <span className="text-xs text-muted-foreground line-clamp-1 md:truncate max-w-full md:max-w-lg opacity-75">
-                                        {url.originalUrl}
-                                    </span>
-                                </div>
                                 
-                                <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                     <span>{new Date(url.createdAt).toLocaleDateString()}</span>
-                                     <span>•</span>
-                                     <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3" /> {url.clickCount} clicks</span>
+                                <div className="flex flex-col gap-1">
+                                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                        <span>{new Date(url.createdAt).toLocaleDateString()}</span>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3" /> {url.clickCount} clicks</span>
+                                    </div>
+                                    {url.owner && (
+                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <UserIcon className="w-3 h-3" />
+                                            <span>{url.owner.name} ({url.owner.email})</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0">
-                                <Link href={`/qrcodes?code=${url.shortCode}`}>
-                                    <Button variant="outline" size="icon" className="h-9 w-9">
-                                        <QrCode className="w-4 h-4" />
+                                <div className="flex items-center gap-2 border-t md:border-t-0 pt-4 md:pt-0">
+                                    <Link href={`/qrcodes?code=${url.shortCode}`}>
+                                        <Button variant="outline" size="icon" className="h-9 w-9">
+                                            <QrCode className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Link href={`/links/${url.shortCode}`}>
+                                        <Button variant="outline" size="icon" className="h-9 w-9">
+                                            <Settings className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Link href={`/analytics/${url.shortCode}`}>
+                                        <Button variant="outline" size="icon" className="h-9 w-9">
+                                            <BarChart2 className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon"
+                                        className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => setDeleteId(url.shortCode)}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
                                     </Button>
-                                </Link>
-                                <Link href={`/links/${url.shortCode}`}>
-                                    <Button variant="outline" size="icon" className="h-9 w-9">
-                                        <Settings className="w-4 h-4" />
-                                    </Button>
-                                </Link>
-                                <Link href={`/analytics/${url.shortCode}`}>
-                                    <Button variant="outline" size="icon" className="h-9 w-9">
-                                        <BarChart2 className="w-4 h-4" />
-                                    </Button>
-                                </Link>
-                                <Button 
-                                    variant="outline" 
-                                    size="icon"
-                                    className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                    onClick={() => setDeleteId(url.shortCode)}
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+                                </div>
                             </div>
-                        </div>
+                        </CardContent>
                     </Card>
                 ))}
              </div>

@@ -32,7 +32,7 @@ export default function TopHeader() {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="flex items-center gap-3 p-1.5 pr-3 hover:bg-muted/50 rounded-full border border-transparent hover:border-border transition-all duration-200 group"
+            className="flex items-center gap-3 p-1.5 pr-3 hover:bg-muted/50 rounded-full border border-transparent hover:border-border hover:cursor-pointer transition-all duration-200 group"
           >
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:shadow-md transition-shadow">
               {userInitial}
@@ -61,7 +61,7 @@ export default function TopHeader() {
                 <div className="p-1">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 hover:cursor-pointer rounded-lg transition-colors"
                     >
                         <LogOut className="w-4 h-4" />
                         Sign Out

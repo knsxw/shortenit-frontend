@@ -24,7 +24,11 @@ interface NavItem {
   href: string;
 }
 
+import { useAuth } from "@/components/auth-provider";
+import { ShieldCheck } from "lucide-react";
+
 export default function Sidebar() {
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
@@ -35,6 +39,11 @@ export default function Sidebar() {
     { label: "Analytics", icon: <ChartBar size={20} />, href: "/analytics" },
     { label: "Settings", icon: <Settings size={20} />, href: "/settings" },
   ];
+
+  if (user?.role === "ADMIN") {
+      // Insert Admin before Settings (last item)
+      navItems.splice(navItems.length - 1, 0, { label: "Admin", icon: <ShieldCheck size={20} />, href: "/admin/users" });
+  }
 
   return (
     <aside
@@ -66,8 +75,8 @@ export default function Sidebar() {
 
       {/* Create New Button */}
       <div className="p-4 border-b border-border">
-        <Link href="/" className="block">
-          <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Link href="/links" className="block">
+          <Button className="w-full bg-primary hover:cursor-pointer hover:bg-primary/80 text-primary-foreground">
             {collapsed ? <Plus /> : "Create New"}
           </Button>
         </Link>
@@ -101,7 +110,7 @@ export default function Sidebar() {
       <div className="p-2 border-t border-border">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full p-2 rounded-lg hover:bg-muted text-foreground transition-colors flex items-center justify-center"
+          className="w-full p-2 rounded-lg hover:bg-muted text-foreground hover:cursor-pointer transition-colors flex items-center justify-center"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}

@@ -1,8 +1,8 @@
-import { Url, LinkDetails, AnalyticsData } from "./types";
+import { Url, LinkDetails, AnalyticsData, User } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
-type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestOptions {
   method?: RequestMethod;
@@ -29,15 +29,66 @@ async function fetchClient<T>(endpoint: string, options: RequestOptions = {}): P
     url = `${API_BASE_URL}${endpoint}`;
   }
 
-  const response = await fetch(url, config);
+  let response = await fetch(url, config);
+
+  // Auto-refresh token on 401 (skip for auth endpoints to avoid loops)
+  if (response.status === 401 && !endpoint.includes("/api/auth/")) {
+    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh-token") : null;
+    if (refreshToken) {
+      try {
+        const refreshUrl = `${API_BASE_URL}/api/auth/refresh`;
+        const refreshResponse = await fetch(refreshUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          const newToken = data.accessToken || data.token;
+          if (newToken) {
+            localStorage.setItem("auth-token", newToken);
+            if (data.refreshToken) {
+              localStorage.setItem("refresh-token", data.refreshToken);
+            }
+
+            // Retry the original request with new token
+            const retryConfig: RequestInit = {
+              ...config,
+              headers: {
+                ...config.headers as Record<string, string>,
+                Authorization: `Bearer ${newToken}`,
+              },
+            };
+            response = await fetch(url, retryConfig);
+          }
+        } else {
+          // Refresh failed — clear tokens
+          localStorage.removeItem("auth-token");
+          localStorage.removeItem("refresh-token");
+          localStorage.removeItem("auth-user");
+          if (typeof window !== "undefined") {
+            window.location.href = "/auth";
+          }
+        }
+      } catch {
+        // Refresh request failed entirely
+        localStorage.removeItem("auth-token");
+        localStorage.removeItem("refresh-token");
+        localStorage.removeItem("auth-user");
+      }
+    }
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
 
-  // Handle empty responses (e.g. DELETE)
-  if (response.status === 204) {
+  // Handle empty responses (e.g. DELETE, logout)
+  const contentLength = response.headers.get("content-length");
+  const contentType = response.headers.get("content-type");
+  if (response.status === 204 || contentLength === "0" || !contentType?.includes("application/json")) {
     return {} as T;
   }
 
@@ -45,6 +96,15 @@ async function fetchClient<T>(endpoint: string, options: RequestOptions = {}): P
 }
 
 export const api = {
+  auth: {
+    refresh: (refreshToken: string) =>
+      fetchClient<{ accessToken: string; refreshToken?: string }>("/api/auth/refresh", {
+        method: "POST",
+        body: { refreshToken },
+      }),
+    logout: () =>
+      fetchClient<void>("/api/auth/logout", { method: "POST" }),
+  },
   links: {
     getAll: () => fetchClient<Url[]>("/api/urls"),
     getOne: (code: string) => fetchClient<LinkDetails>(`/api/urls/${code}`),
@@ -57,5 +117,23 @@ export const api = {
   },
   analytics: {
     get: (code: string) => fetchClient<AnalyticsData>(`/api/analytics/${code}`),
+  },
+  admin: {
+    getAllLinks: (params?: { page?: number; size?: number; sortBy?: string; direction?: string }) => {
+      const queryParams = new URLSearchParams();
+      if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+      if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+      if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params?.direction) queryParams.append('direction', params.direction);
+      const queryString = queryParams.toString();
+      return fetchClient<any>(`/api/admin/urls${queryString ? `?${queryString}` : ''}`);
+    },
+    getUsers: () => fetchClient<User[]>("/api/admin/users"),
+    getUser: (id: number) => fetchClient<User>(`/api/admin/users/${id}`),
+    deleteUser: (id: number) => fetchClient<void>(`/api/admin/users/${id}`, { method: "DELETE" }),
+    updateRole: (id: number, role: string) => fetchClient<User>(`/api/admin/users/${id}/role`, { method: "PATCH", body: { role } }),
+    promote: (id: number) => fetchClient<void>(`/api/admin/users/${id}/promote`, { method: "POST" }),
+    demote: (id: number) => fetchClient<void>(`/api/admin/users/${id}/demote`, { method: "POST" }),
+    checkProtected: () => fetchClient<{ protected: boolean }>("/api/admin/me/protected-status"),
   }
 };

@@ -9,7 +9,11 @@ import { Home, Link2, BarChart2, Settings, QrCode } from "lucide-react";
 
 
 
+import { useAuth } from "@/components/auth-provider";
+import { ShieldCheck } from "lucide-react";
+
 export default function MobileMenu() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -20,6 +24,11 @@ export default function MobileMenu() {
     { label: "Analytics", icon: <BarChart2 className="w-5 h-5" />, href: "/analytics" },
     { label: "Settings", icon: <Settings className="w-5 h-5" />, href: "/settings" },
   ];
+
+  if (user?.role === "ADMIN") {
+      // Insert Admin before Settings
+      navItems.splice(navItems.length - 1, 0, { label: "Admin", icon: <ShieldCheck className="w-5 h-5" />, href: "/admin/users" });
+  }
 
   return (
     <>
@@ -33,7 +42,7 @@ export default function MobileMenu() {
         </div>
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 hover:bg-muted rounded-lg text-foreground"
+          className="p-2 hover:bg-muted rounded-lg text-foreground hover:cursor-pointer"
         >
           <svg
             className="w-6 h-6"
@@ -79,9 +88,11 @@ export default function MobileMenu() {
             })}
           </nav>
           <div className="p-4 border-t border-border">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-              Create new
-            </Button>
+            <Link href="/links">
+              <Button className="w-full bg-primary hover:bg-primary/80 hover:cursor-pointer text-primary-foreground">
+                Create new
+              </Button>
+            </Link>
           </div>
         </div>
       )}
