@@ -85,8 +85,10 @@ async function fetchClient<T>(endpoint: string, options: RequestOptions = {}): P
     throw new Error(errorData.message || `Request failed with status ${response.status}`);
   }
 
-  // Handle empty responses (e.g. DELETE)
-  if (response.status === 204) {
+  // Handle empty responses (e.g. DELETE, logout)
+  const contentLength = response.headers.get("content-length");
+  const contentType = response.headers.get("content-type");
+  if (response.status === 204 || contentLength === "0" || !contentType?.includes("application/json")) {
     return {} as T;
   }
 
