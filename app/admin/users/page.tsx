@@ -46,7 +46,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       const data = await api.admin.getUsers();
-      setUsers(data);
+      setUsers(data.sort((a: User, b: User) => a.id - b.id));
     } catch (error) {
       console.error("Failed to fetch users:", error);
       // If 403, maybe redirect?

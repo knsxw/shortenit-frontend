@@ -128,12 +128,19 @@ export default function LinksPage() {
     setLoading(true);
 
     try {
+      // Auto-prepend https:// if no protocol is specified
+      let urlToShorten = newUrl.trim();
+      if (!/^https?:\/\//i.test(urlToShorten)) {
+        urlToShorten = `https://${urlToShorten}`;
+        setNewUrl(urlToShorten);
+      }
+
       // 1. Validate URL and fetch Title via internal API
-      const { title: fetchedTitle } = await api.links.validate(newUrl);
+      const { title: fetchedTitle } = await api.links.validate(urlToShorten);
 
       // 2. Proceed to shorten with the fetched title
       await api.links.create({
-        originalUrl: newUrl,
+        originalUrl: urlToShorten,
         code: customAlias || undefined,
         title: newUrlTitle || fetchedTitle || undefined,
         expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
@@ -303,7 +310,7 @@ export default function LinksPage() {
                     <form onSubmit={handleShorten} className="space-y-4">
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Input
-                                type="url"
+                                type="text"
                                 value={newUrl}
                                 onChange={(e) => setNewUrl(e.target.value)}
                                 placeholder="Paste your long URL here..."

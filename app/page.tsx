@@ -80,8 +80,15 @@ export default function Home() {
       return;
     }
 
+    // Auto-prepend https:// if no protocol is specified
+    let urlToShorten = longUrl.trim();
+    if (!/^https?:\/\//i.test(urlToShorten)) {
+      urlToShorten = `https://${urlToShorten}`;
+      setLongUrl(urlToShorten);
+    }
+
     try {
-      new URL(longUrl);
+      new URL(urlToShorten);
     } catch {
       setError("Please enter a valid URL");
       return;
@@ -95,7 +102,7 @@ export default function Home() {
       const validationRes = await fetch("/internal/validate-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: longUrl }),
+        body: JSON.stringify({ url: urlToShorten }),
       });
 
       if (!validationRes.ok) {
@@ -115,7 +122,7 @@ export default function Home() {
             "Authorization": token ? `Bearer ${token}` : ""
           },
           body: JSON.stringify({
-            originalUrl: longUrl,
+            originalUrl: urlToShorten,
             title: title || fetchedTitle || undefined,
           }),
         }
@@ -190,7 +197,7 @@ export default function Home() {
                     </div>
                     <Input
                       id="url"
-                      type="url"
+                      type="text"
                       placeholder="Paste your long URL here..."
                       value={longUrl}
                       onChange={(e) => setLongUrl(e.target.value)}
