@@ -1,7 +1,9 @@
 import { Url, LinkDetails, AnalyticsData, User } from "./types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-
+const API_BASE_URL = typeof window === "undefined"
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || "")
+  : "";
+  
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestOptions {

@@ -114,7 +114,7 @@ export default function Home() {
 
       // 2. Shorten (using correct POST /api/urls endpoint)
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls`,
+        `/api/urls`,
         {
           method: "POST",
           headers: {

@@ -83,7 +83,7 @@ function QRCodesContent() {
       try {
         const token = localStorage.getItem("auth-token");
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=1000`,
+          `/api/urls?page=0&size=1000`,
           {
             headers: {
                 "Authorization": token ? `Bearer ${token}` : ""
@@ -97,7 +97,7 @@ function QRCodesContent() {
             shortCode: link.code || link.shortCode,
             shortUrl:
               link.shortUrl ||
-              `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/s/${link.code || link.shortCode}`,
+              `${typeof window !== "undefined" ? window.location.origin : ""}/s/${link.code || link.shortCode}  `,
             originalUrl: link.originalUrl,
           }));
           

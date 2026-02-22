@@ -49,7 +49,7 @@ export default function SettingsPage() {
     setLoadingKeys(true);
     try {
         const token = localStorage.getItem("auth-token");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/users/me/api-keys`, {
+        const response = await fetch(`/api/users/me/api-keys`, {
             headers: {
                 "Authorization": token ? `Bearer ${token}` : ""
             }
@@ -82,7 +82,7 @@ export default function SettingsPage() {
 
     try {
         const token = localStorage.getItem("auth-token");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/users/me/api-keys`, {
+        const response = await fetch(`/api/users/me/api-keys`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
