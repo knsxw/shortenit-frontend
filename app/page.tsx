@@ -43,7 +43,7 @@ export default function Home() {
     try {
       const token = localStorage.getItem("auth-token");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/urls?page=0&size=5`,
+        `/api/urls?page=0&size=5`,
         {
           headers: {
             "Authorization": token ? `Bearer ${token}` : ""
