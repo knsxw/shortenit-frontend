@@ -138,11 +138,22 @@ export default function LinksPage() {
       // 1. Validate URL and fetch Title via internal API
       const { title: fetchedTitle } = await api.links.validate(urlToShorten);
 
+      // Generate a fallback title from the URL if no title was fetched
+      const fallbackTitle = (() => {
+        try {
+          const urlObj = new URL(urlToShorten);
+          const path = urlObj.pathname.replace(/^\/|\/$/g, "");
+          return path ? `${urlObj.hostname}/${path}` : urlObj.hostname;
+        } catch {
+          return urlToShorten;
+        }
+      })();
+
       // 2. Proceed to shorten with the fetched title
       await api.links.create({
         originalUrl: urlToShorten,
         code: customAlias || undefined,
-        title: newUrlTitle || fetchedTitle || undefined,
+        title: newUrlTitle || fetchedTitle || fallbackTitle,
         expirationDays: expirationDays ? parseInt(expirationDays) : undefined,
       });
 
