@@ -33,7 +33,7 @@ export default function LayoutWrapper({
         </div>
       </div>
       {/* Mobile layout */}
-      <div className="md:hidden flex flex-col flex-1 overflow-auto">
+      <div className="md:hidden flex flex-col flex-1 overflow-hidden">
         {children}
       </div>
     </div>
